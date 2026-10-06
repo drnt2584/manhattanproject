@@ -1,4 +1,4 @@
-import { config, assertProductionConfig } from './config.js';
+import { config, assertProductionConfig, chatChannels } from './config.js';
 import { logger } from './logger.js';
 import { pool } from './db.js';
 import { migrate } from './migrate.js';
@@ -43,7 +43,7 @@ async function imapLoop() {
 async function main() {
   assertProductionConfig();
   if (!config.skipMigrations) await migrate();
-  logger.info({ chat: config.chatChannel, whatsapp: config.whatsapp.provider, telegram: config.telegram.botToken ? 'bot' : 'mock', email: config.email.provider, imap: config.email.imapEnabled }, 'worker started');
+  logger.info({ chat: chatChannels(), whatsapp: config.whatsapp.provider, telegram: config.telegram.botToken ? 'bot' : 'mock', email: config.email.provider, imap: config.email.imapEnabled }, 'worker started');
   await Promise.all([schedulerLoop(), imapLoop(), telegramPollLoop(() => stopping)]);
   await pool.end();
   logger.info('worker stopped');

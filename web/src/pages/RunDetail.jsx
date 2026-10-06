@@ -41,7 +41,7 @@ export default function RunDetail() {
         </dl>
         {run.error && <div className="note bad">{run.error}</div>}
         <div className="progress-grid">
-          {[...new Set(progress.map((p) => p.channel))].filter((c) => c !== 'none').sort((a) => (a === 'email' ? 1 : -1)).map((ch, i) => (
+          {['telegram', 'whatsapp', 'email'].filter((c) => progress.some((p) => p.channel === c)).map((ch, i) => (
             <div key={ch} className="progress">
               <div><span className="muted small">Step {i + 1}</span> <ChannelTag channel={ch} /></div>
               <div className="small">{count(ch, 'sent')} sent · {count(ch, 'failed')} failed · {count(ch, 'skipped')} skipped · {count(ch, 'pending') + count(ch, 'sending')} waiting</div>

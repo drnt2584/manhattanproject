@@ -4,7 +4,7 @@ The app runs today in **mock mode**, which sends nothing real. To go live, set u
 
 ## 0. Telegram (to start now)
 
-While WhatsApp is being set up, the app runs on a Telegram bot. All it needs is a **bot token from @BotFather**. See [TELEGRAM-SETUP.md](TELEGRAM-SETUP.md) for the 5-minute setup and the invitation text for residents.
+Telegram is a permanent channel: residents who join the bot get their messages on Telegram, and everyone else gets WhatsApp once it's approved. All it needs is a **bot token from @BotFather**. See [TELEGRAM-SETUP.md](TELEGRAM-SETUP.md) for the 5-minute setup and the invitation text for residents.
 
 ## 1. WhatsApp: Meta WhatsApp Business Platform (Cloud API)
 

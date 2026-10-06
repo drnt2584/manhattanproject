@@ -41,6 +41,8 @@ export const config = {
   adminNotifyEmails: list(env.ADMIN_NOTIFY_EMAILS),
 
   whatsapp: {
+    // WhatsApp is used for residents who have not joined Telegram (or for everyone if Telegram is off)
+    enabled: bool(env.WHATSAPP_ENABLED, true),
     provider: env.WHATSAPP_PROVIDER || 'mock', // 'meta' | 'mock'
     apiVersion: env.WHATSAPP_API_VERSION || 'v22.0',
     phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID || '',
@@ -51,10 +53,9 @@ export const config = {
     graphBaseUrl: env.WHATSAPP_GRAPH_URL || 'https://graph.facebook.com',
   },
 
-  // Which chat app carries the phone notifications: 'telegram' or 'whatsapp'
-  chatChannel: env.CHAT_CHANNEL === 'telegram' ? 'telegram' : 'whatsapp',
-
   telegram: {
+    // Telegram is used for every resident who has joined the bot; it takes priority over WhatsApp
+    enabled: bool(env.TELEGRAM_ENABLED, false),
     botToken: env.TELEGRAM_BOT_TOKEN || '', // empty = mock mode
     apiBase: env.TELEGRAM_API_URL || 'https://api.telegram.org',
     concurrency: int(env.TELEGRAM_CONCURRENCY, 5), // Telegram allows ~30 msg/s overall
@@ -92,10 +93,16 @@ export const config = {
   },
 };
 
+/** Chat channels that are switched on, in priority order. */
+export function chatChannels() {
+  return [config.telegram.enabled && 'telegram', config.whatsapp.enabled && 'whatsapp'].filter(Boolean);
+}
+
 export function assertProductionConfig() {
   const problems = [];
   if (!config.sessionSecret || config.sessionSecret.length < 32) problems.push('SESSION_SECRET must be at least 32 characters');
-  if (config.isProd && config.whatsapp.provider === 'meta') {
+  if (config.isProd && config.telegram.enabled && !config.telegram.botToken) problems.push('TELEGRAM_BOT_TOKEN is required when TELEGRAM_ENABLED=true');
+  if (config.isProd && config.whatsapp.enabled && config.whatsapp.provider === 'meta') {
     for (const k of ['phoneNumberId', 'accessToken', 'appSecret', 'verifyToken']) {
       if (!config.whatsapp[k]) problems.push(`WHATSAPP_${k.replace(/[A-Z]/g, (c) => '_' + c).toUpperCase()} is required`);
     }

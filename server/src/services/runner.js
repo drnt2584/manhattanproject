@@ -1,5 +1,5 @@
 import { pool, query, tx } from '../db.js';
-import { config } from '../config.js';
+import { config, chatChannels } from '../config.js';
 import { logger } from '../logger.js';
 import { audit } from './audit.js';
 import { syncSource } from './sources.js';
@@ -12,8 +12,8 @@ import { mapPool, sleep } from '../lib/concurrency.js';
 import { HttpError, SendError } from '../lib/errors.js';
 import { reminderPlan, recordReminderSends, contactKey } from './reminders.js';
 
-// Chat list first (WhatsApp, or Telegram while WhatsApp is being set up), then the email list
-const channelOrder = () => [config.chatChannel, 'email'];
+// Chat lists first (Telegram, then WhatsApp), then the email list
+const channelOrder = () => [...chatChannels(), 'email'];
 
 /** Queue a run. Rejects if another run is already queued or in progress. */
 export async function requestRun({ trigger, kind = 'broadcast', scheduleId = null, admin = null }, client = null) {
@@ -58,14 +58,20 @@ async function buildRecipients(run) {
     }));
   }
   const out = [];
-  const chat = config.chatChannel;
-  const links = chat === 'telegram' ? await telegramLinks() : null;
+  const tgOn = config.telegram.enabled;
+  const waOn = config.whatsapp.enabled;
+  const links = tgOn ? await telegramLinks() : new Map();
 
   for (const { contact: c, key, tpl, extra, missing: missingTemplate } of items) {
     const base = { contact_id: c.id, row_number: c.row_number, contact_name: c.name, status_key: key, ...extra };
     const channels = [];
-    if (c.whatsapp) {
-      if (chat === 'telegram' && !links.has(c.whatsapp)) {
+    // One chat message per person: Telegram if they joined the bot, otherwise WhatsApp
+    if (c.whatsapp && (tgOn || waOn)) {
+      if (tgOn && links.has(c.whatsapp)) {
+        channels.push(['telegram', c.whatsapp]);
+      } else if (waOn) {
+        channels.push(['whatsapp', c.whatsapp]);
+      } else {
         // A Telegram bot can only message people who opened it and shared their number.
         // That only matters if this template actually sends a chat message.
         const r = { ...base, channel: 'telegram', address: c.whatsapp, template_id: tpl?.id ?? null };
@@ -73,13 +79,11 @@ async function buildRecipients(run) {
         else if (!tpl.wa_enabled) out.push({ ...r, state: 'skipped', last_error: 'Chat message disabled for this template' });
         else if (c.email) out.push({ ...r, state: 'skipped', last_error: 'Has not joined the Telegram bot yet (email only)' });
         else out.push({ ...r, state: 'failed', last_error: 'Not reachable: has not joined the Telegram bot and has no email' });
-      } else {
-        channels.push([chat, c.whatsapp]);
       }
     }
     if (c.email) channels.push(['email', c.email]);
     if (!channels.length) {
-      if (!c.whatsapp) out.push({ ...base, channel: 'none', address: null, state: 'failed', last_error: `No valid mobile number or email (${c.warnings.join('; ') || 'empty'})` });
+      if (!c.whatsapp || !(tgOn || waOn)) out.push({ ...base, channel: 'none', address: null, state: 'failed', last_error: `No valid mobile number or email (${c.warnings.join('; ') || 'empty'})` });
       continue;
     }
     const vars = contactVariables(c);

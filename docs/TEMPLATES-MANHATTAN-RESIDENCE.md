@@ -61,7 +61,7 @@ The account details are fixed text inside the WhatsApp templates, so **if the ba
 | 3 | Personal Data Protection Notice (bilingual) | Someone **not in the sheet** sends a WhatsApp message for the first time | That person. Their YES/YA or NO/TIDAK is recorded under **Privacy consents** (exportable to CSV) and in the audit log. |
 | 4 | Balance inquiry | A resident in the sheet messages words like *balance, bill, dues, how much, SOA, baki, bil, yuran, tunggakan, berapa* (WhatsApp or email) | That resident: the sheet is re-read first, and the reply shows the amounts and how many days overdue. An owner with several units gets one section per unit. |
 
-**On Telegram** (`CHAT_CHANNEL=telegram`, see [TELEGRAM-SETUP.md](TELEGRAM-SETUP.md)), all four are sent exactly as written below, with no approval needed, but only to residents who have joined the bot.
+**On Telegram** (see [TELEGRAM-SETUP.md](TELEGRAM-SETUP.md)), all four are sent exactly as written below, with no approval needed, to residents who have joined the bot. Everyone else gets them on WhatsApp once it's switched on.
 
 On WhatsApp, messages 1 and 2 are started by the building, so **WhatsApp requires Meta-approved templates** for them (below). Messages 3 and 4 are replies to someone who just wrote in, so they are free text and **need no Meta approval**. They can be edited any time under **Automations**.
 

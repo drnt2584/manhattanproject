@@ -207,11 +207,14 @@ All `/api` routes except `/api/auth/login` require the session cookie. Every sta
 
 Every automatic reply is stored in the inbox (`messages.auto = true`) and audited (`auto_reply_sent`, `privacy_notice_sent`, `privacy_consent_accepted` / `privacy_consent_declined`, `balance_inquiry`).
 
-### Telegram channel (`CHAT_CHANNEL=telegram`)
+### Chat channels (`TELEGRAM_ENABLED`, `WHATSAPP_ENABLED`)
+- One chat message per person, chosen per contact: **Telegram** if their phone is linked to the bot, else **WhatsApp** if enabled, plus **email** if they have an address. Send order: Telegram list, WhatsApp list, email list.
+
+### Telegram
 - The worker long-polls `getUpdates` (no webhook or public URL needed) and stores the offset in `settings.telegram_offset`.
 - `/start` → welcome + `request_contact` keyboard. A shared contact is accepted only if `contact.user_id == from.id`. The phone is normalized, and the row `telegram_links(chat_id, phone, …)` is upserted. Earlier messages filed under `tg:<chat_id>` move to the phone-number thread.
 - Contacts are matched on the phone number (`contacts.whatsapp` column, labelled *Mobile*). Inbox threads, consents, balance lookups and reminders therefore work the same on Telegram and WhatsApp.
-- Runs: the chat channel goes first, then email. A phone contact without a link becomes `skipped` (if it has an email) or `failed` (if not). A 403 from Telegram sets `telegram_links.blocked_at`.
+- With WhatsApp off, a phone contact without a link becomes `skipped` (if it has an email) or `failed` (if not). A 403 from Telegram sets `telegram_links.blocked_at`, so later runs fall back to WhatsApp for that person.
 - The chat-message text of each template (`wa_body`) is sent as-is on Telegram; the Meta template name and parameters are only used on WhatsApp.
 
 ### Webhooks (public)

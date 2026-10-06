@@ -4,15 +4,16 @@ import { api } from './api.js';
 export const CHANNEL_LABEL = { whatsapp: 'WhatsApp', telegram: 'Telegram', email: 'Email', none: 'No channel' };
 
 let chatPromise = null;
-/** The chat app used for phone notifications on this server ('telegram' or 'whatsapp'). */
-export function useChatChannel() {
-  const [chat, setChat] = useState('whatsapp');
+/** Chat channels switched on, in priority order, e.g. ['telegram', 'whatsapp']. */
+export function useChatChannels() {
+  const [chats, setChats] = useState([]);
   useEffect(() => {
-    chatPromise ??= api.get('/settings/status').then((s) => s.chatChannel).catch(() => 'whatsapp');
-    chatPromise.then(setChat);
+    chatPromise ??= api.get('/settings/status').then((s) => s.chatChannels).catch(() => []);
+    chatPromise.then(setChats);
   }, []);
-  return chat;
+  return chats;
 }
+export const chatLabel = (chats) => chats.map((c) => CHANNEL_LABEL[c]).join(' / ') || 'Chat';
 
 export const fmtDate = (d) => (d ? new Date(d).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—');
 export const fmtRel = (d) => {

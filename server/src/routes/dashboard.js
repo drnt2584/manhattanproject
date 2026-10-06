@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query } from '../db.js';
-import { config } from '../config.js';
+import { config, chatChannels } from '../config.js';
 import { activeSource } from '../services/sources.js';
 
 const r = Router();
@@ -25,7 +25,7 @@ r.get('/', async (_req, res) => {
                   count(*) FILTER (WHERE a.event = 'reply_received')::int AS replies
              FROM audit_log a WHERE a.ts > now() - interval '14 days' GROUP BY 1 ORDER BY 1`, [config.timezone]).then((x) => x.rows),
   ]);
-  res.json({ chatChannel: config.chatChannel, source, nextSchedule, runs, unread, totals, contacts, missingTemplates, daily, timezone: config.timezone });
+  res.json({ chatChannels: chatChannels(), source, nextSchedule, runs, unread, totals, contacts, missingTemplates, daily, timezone: config.timezone });
 });
 
 export default r;

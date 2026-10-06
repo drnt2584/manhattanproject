@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { config } from '../config.js';
+import { config, chatChannels } from '../config.js';
 import { audit } from '../services/audit.js';
 import { whatsapp } from '../providers/whatsapp.js';
 import { telegram } from '../providers/telegram.js';
@@ -23,12 +23,12 @@ r.get('/status', async (_req, res) => {
   const e = config.email;
   res.json({
     publicUrl: config.publicUrl,
-    chatChannel: config.chatChannel,
-    telegram: { mode: config.telegram.botToken ? 'bot' : 'mock', bot: botName, link: botName ? `https://t.me/${botName}` : null, linked: tg.linked, blocked: tg.blocked },
+    chatChannels: chatChannels(),
+    telegram: { enabled: config.telegram.enabled, mode: config.telegram.botToken ? 'bot' : 'mock', bot: botName, link: botName ? `https://t.me/${botName}` : null, linked: tg.linked, blocked: tg.blocked },
     timezone: config.timezone,
     defaultCountryCode: config.defaultCountryCode,
     adminNotifyEmails: config.adminNotifyEmails,
-    whatsapp: { provider: w.provider, phoneNumberId: w.phoneNumberId ? `…${w.phoneNumberId.slice(-4)}` : null, tokenSet: !!w.accessToken, appSecretSet: !!w.appSecret, verifyTokenSet: !!w.verifyToken, webhookUrl: `${config.publicUrl}/webhooks/whatsapp` },
+    whatsapp: { enabled: w.enabled, provider: w.provider, phoneNumberId: w.phoneNumberId ? `…${w.phoneNumberId.slice(-4)}` : null, tokenSet: !!w.accessToken, appSecretSet: !!w.appSecret, verifyTokenSet: !!w.verifyToken, webhookUrl: `${config.publicUrl}/webhooks/whatsapp` },
     email: { provider: e.provider, from: e.from, smtpHost: e.smtpHost || null, imapEnabled: e.imapEnabled, imapHost: e.imapHost || null },
     googleServiceAccount: !!config.google.serviceAccountFile,
   });

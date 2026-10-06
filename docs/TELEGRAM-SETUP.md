@@ -1,8 +1,16 @@
-# Telegram (while WhatsApp is being approved)
+# Telegram channel
 
-The app can send everything over **Telegram** instead of WhatsApp: the quarterly notice, reminders, privacy notice, balance replies and inbox replies. Telegram needs **no business verification, no template approval and has no 24-hour reply window**. Email works exactly as before.
+Telegram is a full channel next to WhatsApp and email. **Each person gets one chat message plus email:**
 
-All the WhatsApp code and templates stay in place. When Meta approves your account, you change one setting (see the last section).
+| Person | Chat message | Email |
+|---|---|---|
+| Has joined the Telegram bot | **Telegram** | yes, if they have one |
+| Has not joined Telegram, WhatsApp is on | **WhatsApp** | yes, if they have one |
+| Has not joined Telegram, WhatsApp is off | none (recorded as skipped, or as failed if they have no email either) | yes, if they have one |
+
+When both chat channels are available, **Telegram + email is the priority**, and WhatsApp is the fallback for people who haven't joined the bot. Sending order: the whole Telegram list, then the WhatsApp list, then the email list.
+
+This covers everything: the quarterly notice, the reminders, the privacy notice, balance replies and inbox replies. Replies always go back on the channel the person wrote from. Telegram needs **no business verification, no template approval and has no 24-hour reply window**.
 
 ## The one difference: residents must join the bot
 
@@ -40,13 +48,14 @@ The app matches that number to the **Mobile** column of your sheet and links the
 In `server/.env` on the Mac mini:
 
 ```
-CHAT_CHANNEL=telegram
+TELEGRAM_ENABLED=true
 TELEGRAM_BOT_TOKEN=123456789:AA…your token…
+WHATSAPP_ENABLED=false     # until Meta approves your templates
 ```
 
 Restart the worker: `pm2 restart notify-worker`. The worker fetches new Telegram messages itself (long polling), so **Telegram needs no webhook and no public URL**. It works even before Cloudflare is set up.
 
-Check **Settings** in the dashboard: it shows *Chat channel: Telegram* and the bot's `t.me/…` link. Send yourself a test: Settings → Send a test → Telegram → your number (after you've joined the bot yourself).
+Check **Settings** in the dashboard: it shows *Chat channels: Telegram* and the bot's `t.me/…` link. Send yourself a test: Settings → Send a test → Telegram → your number (after you've joined the bot yourself).
 
 With `TELEGRAM_BOT_TOKEN` empty, the app runs Telegram in **mock mode**: nothing is sent, which is useful for trying things out.
 
@@ -97,9 +106,9 @@ The bot's own messages (welcome, "linked to Unit A-12-03", etc.) are bilingual a
 | Cost | free |
 | Template approval | none: edit messages in the dashboard any time |
 
-## Switching to WhatsApp later
+## Adding WhatsApp later
 
 1. Finish Meta setup and get the four templates approved (`docs/TEMPLATES-MANHATTAN-RESIDENCE.md`).
-2. In `.env`: `CHAT_CHANNEL=whatsapp` plus the `WHATSAPP_*` values, then `pm2 restart notify-api notify-worker`.
+2. In `.env`: `WHATSAPP_ENABLED=true` plus the `WHATSAPP_*` values, then `pm2 restart notify-api notify-worker`.
 
-Nothing else changes. Templates, reminders, consents, the inbox history and the audit log are all kept, because contacts are tracked by phone number on both channels.
+Telegram stays on. Residents who joined the bot keep getting Telegram, and everyone else gets WhatsApp. Settings shows *Chat channels: Telegram first, then WhatsApp*. To stop using Telegram, set `TELEGRAM_ENABLED=false`. Templates, reminders, consents, inbox history and the audit log are unaffected, because people are tracked by phone number on every channel.

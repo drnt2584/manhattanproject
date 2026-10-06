@@ -27,9 +27,9 @@ export default function Settings() {
           <h2>Connections</h2>
           <p className="muted small">These are set in the server's <code>.env</code> file. Secrets are never shown here.</p>
           <dl className="facts">
-            <div><dt>Chat channel</dt><dd>{data.chatChannel === 'telegram' ? 'Telegram (WhatsApp paused)' : 'WhatsApp'}</dd></div>
-            {data.chatChannel === 'telegram' && <div><dt>Telegram bot</dt><dd>{data.telegram.mode === 'bot' ? <>{data.telegram.link ? <a href={data.telegram.link} target="_blank" rel="noreferrer">{data.telegram.link}</a> : 'connected'} · {data.telegram.linked} residents joined{data.telegram.blocked ? ` · ${data.telegram.blocked} blocked the bot` : ''}</> : 'Mock (test mode — set TELEGRAM_BOT_TOKEN)'}</dd></div>}
-            <div><dt>WhatsApp</dt><dd>{data.whatsapp.provider === 'meta' ? `Meta Cloud API · number id ${data.whatsapp.phoneNumberId ?? 'missing'} · token ${data.whatsapp.tokenSet ? 'set' : 'missing'}` : 'Mock (test mode — nothing is really sent)'}</dd></div>
+            <div><dt>Chat channels</dt><dd>{data.chatChannels.length ? data.chatChannels.map((c) => ({ telegram: 'Telegram', whatsapp: 'WhatsApp' })[c]).join(' first, then ') : 'None (email only)'}</dd></div>
+            {data.telegram.enabled && <div><dt>Telegram bot</dt><dd>{data.telegram.mode === 'bot' ? <>{data.telegram.link ? <a href={data.telegram.link} target="_blank" rel="noreferrer">{data.telegram.link}</a> : 'connected'} · {data.telegram.linked} residents joined{data.telegram.blocked ? ` · ${data.telegram.blocked} blocked the bot` : ''}</> : 'Mock (test mode — set TELEGRAM_BOT_TOKEN)'}</dd></div>}
+            <div><dt>WhatsApp</dt><dd>{!data.whatsapp.enabled ? 'Switched off (WHATSAPP_ENABLED=false)' : data.whatsapp.provider === 'meta' ? `Meta Cloud API · number id ${data.whatsapp.phoneNumberId ?? 'missing'} · token ${data.whatsapp.tokenSet ? 'set' : 'missing'}` : 'Mock (test mode — nothing is really sent)'}</dd></div>
             <div><dt>WhatsApp webhook URL</dt><dd><code>{data.whatsapp.webhookUrl}</code> · verify token {data.whatsapp.verifyTokenSet ? 'set' : 'missing'} · app secret {data.whatsapp.appSecretSet ? 'set' : 'missing'}</dd></div>
             <div><dt>Email sending</dt><dd>{data.email.provider === 'smtp' ? `SMTP ${data.email.smtpHost} as ${data.email.from}` : 'Mock (test mode — nothing is really sent)'}</dd></div>
             <div><dt>Email replies</dt><dd>{data.email.imapEnabled ? `Reading ${data.email.imapHost}` : 'Off (IMAP not enabled)'}</dd></div>

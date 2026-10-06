@@ -29,5 +29,3 @@ export async function sendChatText(channel, address, text, extra = {}) {
   }
   throw new Error(`not a chat channel: ${channel}`);
 }
-
-export const CHAT_CHANNELS = ['whatsapp', 'telegram'];

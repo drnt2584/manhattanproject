@@ -100,7 +100,7 @@ export async function handleTelegramUpdate(update) {
 
 /** Worker loop: long-poll Telegram for new messages (no public URL needed). */
 export async function telegramPollLoop(isStopping) {
-  if (config.chatChannel !== 'telegram' || !config.telegram.botToken) return;
+  if (!config.telegram.enabled || !config.telegram.botToken) return;
   await telegram.deleteWebhook().catch(() => {});
   const me = await telegram.getMe().catch(() => null);
   logger.info({ bot: me?.username }, 'Telegram bot polling started');

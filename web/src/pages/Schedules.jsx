@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
-import { Badge, CHANNEL_LABEL, Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useChatChannel, useLoad } from '../util.jsx';
+import { Badge, chatLabel, Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useChatChannels, useLoad } from '../util.jsx';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -21,7 +21,7 @@ export default function Schedules() {
   const create = useAction();
   const cancel = useAction();
   const tz = list.data?.timezone || 'UTC';
-  const chat = CHANNEL_LABEL[useChatChannel()];
+  const chat = chatLabel(useChatChannels());
 
   const [form, setForm] = useState({ name: '', mode: 'once', at: '', freq: 'monthly', time: '09:00', dow: '1', dom: '1', cron: '' });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -59,7 +59,7 @@ export default function Schedules() {
 
       <section className="card">
         <h2>Send now</h2>
-        <p className="muted">Sends to the whole active list immediately: first every {chat} message, then every email. If the source is a Google Sheet it is re-read first.</p>
+        <p className="muted">Sends to the whole active list immediately: first the chat messages ({chat}: Telegram for residents who joined the bot, otherwise WhatsApp), then every email. If the source is a Google Sheet it is re-read first.</p>
         <Feedback action={sendNow} />
         <button className="primary" onClick={doSendNow} disabled={sendNow.busy}>{sendNow.busy ? 'Queuing…' : 'Send now'}</button>
       </section>

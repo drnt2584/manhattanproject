@@ -11,6 +11,7 @@ import { claimRun, executeRun } from '../src/services/runner.js';
 import { handleTelegramUpdate } from '../src/services/telegramBot.js';
 import { mockOutbox } from '../src/providers/telegram.js';
 import { verifyChain } from '../src/services/audit.js';
+import { config } from '../src/config.js';
 
 const H = { 'X-Requested-With': 'notify' };
 let agent;
@@ -123,11 +124,34 @@ test('people not in the list get the bilingual privacy notice after sharing thei
 
 test('settings report the Telegram channel; audit chain intact', async () => {
   const st = (await agent.get('/api/settings/status').expect(200)).body;
-  assert.equal(st.chatChannel, 'telegram');
+  assert.deepEqual(st.chatChannels, ['telegram']);
   assert.equal(st.telegram.mode, 'mock');
   assert.equal(st.telegram.linked, 3);
   assert.equal(st.telegram.blocked, 1);
   const dash = (await agent.get('/api/dashboard').expect(200)).body;
   assert.equal(dash.contacts.telegram, 2);
   assert.equal((await verifyChain()).ok, true);
+});
+
+test('with both chat channels on: Telegram for those who joined, WhatsApp for the rest, plus email', async () => {
+  config.whatsapp.enabled = true;
+  try {
+    const st = (await agent.get('/api/settings/status').expect(200)).body;
+    assert.deepEqual(st.chatChannels, ['telegram', 'whatsapp']);
+    const { body: { run } } = await agent.post('/api/runs').set(H).send({}).expect(202);
+    await executeRun(await claimRun());
+    const { rows } = await query('SELECT contact_name, channel, state FROM run_recipients WHERE run_id = $1 ORDER BY row_number, channel', [run.id]);
+    assert.deepEqual(Object.fromEntries(rows.map((r) => [`${r.contact_name}/${r.channel}`, r.state])), {
+      'Aisyah Rahman/email': 'sent', 'Aisyah Rahman/telegram': 'sent', // joined Telegram: Telegram + email, no WhatsApp
+      'Benjamin Lee/email': 'sent', 'Benjamin Lee/telegram': 'sent', // linked during the privacy test
+      'Chitra Devi/whatsapp': 'skipped', // paid
+      'Daniel Wong/email': 'sent',
+      'Farah Aziz/whatsapp': 'sent', // not on Telegram -> WhatsApp
+      'Gopal Nair/whatsapp': 'failed', // blocked the bot -> tried on WhatsApp (mock rejects numbers ending 0000)
+    });
+    const order = (await query("SELECT channel FROM audit_log WHERE run_id = $1 AND event = 'message_sent' ORDER BY id", [run.id])).rows.map((r) => r.channel);
+    assert.deepEqual(order, ['telegram', 'telegram', 'whatsapp', 'email', 'email', 'email']);
+  } finally {
+    config.whatsapp.enabled = false;
+  }
 });

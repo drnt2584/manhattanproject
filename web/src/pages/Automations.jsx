@@ -207,7 +207,7 @@ export default function Automations() {
   return (
     <div className="page">
       <header className="page-head"><h1>Automations</h1></header>
-      {status.data?.chatChannel === 'telegram' && <TelegramBot initial={data.settings.telegram} status={status.data.telegram} onSaved={reload} />}
+      {status.data?.telegram?.enabled && <TelegramBot initial={data.settings.telegram} status={status.data.telegram} onSaved={reload} />}
       <Reminders initial={data.settings.reminders} lastRun={data.lastReminderRun} templates={keys} onSaved={reload} />
       <Privacy initial={data.settings.privacy} counts={data.consents} onSaved={reload} />
       <Balance initial={data.settings.balance} onSaved={reload} />

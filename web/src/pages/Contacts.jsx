@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, qs } from '../api.js';
-import { Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useChatChannel, useLoad } from '../util.jsx';
+import { Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useChatChannels, useLoad } from '../util.jsx';
 
 const PAGE = 100;
 
@@ -12,7 +12,7 @@ export default function Contacts() {
   const [url, setUrl] = useState('');
   const [file, setFile] = useState(null);
   const act = useAction();
-  const tg = useChatChannel() === 'telegram';
+  const tg = useChatChannels().includes('telegram');
 
   const list = useLoad(() => api.get('/sources/contacts' + qs({ search, warnings: warningsOnly ? 1 : '', limit: PAGE, offset })), [search, warningsOnly, offset]);
   const statuses = useLoad(() => api.get('/sources/statuses'), []);
