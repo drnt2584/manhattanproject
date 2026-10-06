@@ -152,8 +152,8 @@ test('webhook signature is enforced when app secret is set', async () => {
 test('schedules: create, fire when due, cancel', async () => {
   const soon = new Date(Date.now() + 3600_000).toISOString();
   const a = await agent.post('/api/schedules').set(H).send({ name: 'Monthly', run_at: soon }).expect(201);
-  const b = await agent.post('/api/schedules').set(H).send({ name: 'Weekly', cron: '0 9 * * 1', timezone: 'Asia/Manila' }).expect(201);
-  assert.equal(new Date(b.body.schedule.next_run_at).getUTCHours(), 1); // 09:00 Manila = 01:00 UTC
+  const b = await agent.post('/api/schedules').set(H).send({ name: 'Weekly', cron: '0 9 * * 1', timezone: 'Asia/Kuala_Lumpur' }).expect(201);
+  assert.equal(new Date(b.body.schedule.next_run_at).getUTCHours(), 1); // 09:00 Kuala Lumpur = 01:00 UTC
   await agent.post('/api/schedules').set(H).send({ name: 'Past', run_at: '2020-01-01T00:00:00Z' }).expect(400);
 
   await agent.post(`/api/schedules/${b.body.schedule.id}/cancel`).set(H).expect(200);

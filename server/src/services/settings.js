@@ -18,15 +18,15 @@ export const DEFAULTS = {
     accepted_reply: 'Thank you. Your consent has been recorded. How can we help you?',
     declined_reply: 'Understood. We have recorded that you do not consent, and we will not process your information further.',
     invalid_reply: 'Please reply YES if you agree to the Data Privacy Notice, or NO if you do not.',
-    yes_words: ['yes', 'y', 'oo', 'opo', 'agree', 'i agree', 'accept', 'sige', 'ok', 'okay'],
-    no_words: ['no', 'n', 'hindi', 'ayaw', 'decline', 'disagree', 'i do not agree', "don't agree"],
+    yes_words: ['yes', 'y', 'agree', 'i agree', 'accept', 'ok', 'ya', 'ye', 'setuju', 'saya setuju'],
+    no_words: ['no', 'n', 'disagree', 'decline', 'i do not agree', "i don't agree", 'tidak', 'tak', 'tidak setuju', 'tak setuju'],
   },
   balance: {
     enabled: false,
-    keywords: ['balance', 'bill', 'billing', 'dues', 'how much', 'magkano', 'outstanding', 'statement', 'soa', 'unpaid', 'owe'],
+    keywords: ['balance', 'bill', 'billing', 'dues', 'how much', 'outstanding', 'statement', 'soa', 'unpaid', 'owe', 'baki', 'bil', 'yuran', 'tunggakan', 'berapa'],
     reply: 'Hi {{first_name}}, your current balance is {{total_due_formatted}}, {{due_status}}. Please settle it as soon as possible.',
     paid_reply: 'Hi {{first_name}}, you have no unpaid balance. Thank you!',
-    not_found_reply: 'Sorry, we could not find an account linked to this number. Please contact the administration office.',
+    not_found_reply: 'Sorry, we could not find an account linked to this number. Please contact the management office.',
   },
 };
 

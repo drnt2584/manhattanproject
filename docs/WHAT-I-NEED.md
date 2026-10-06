@@ -55,7 +55,7 @@ The official API is the only reliable, ban-safe way to send bulk WhatsApp messag
 
 Pick one:
 - **Simple**: share the sheet as *Anyone with the link → Viewer*. Nothing else to configure.
-- **Private** (recommended for personal data): in Google Cloud, create a project, enable the **Google Sheets API**, create a **service account** and download its JSON key to the Mac mini (e.g. `~/notify/service-account.json`, which git ignores). Set `GOOGLE_SERVICE_ACCOUNT_FILE` to that path, then share the sheet with the service account's email as Viewer.
+- **Private** (recommended for personal data, and in line with the PDPA's security principle): in Google Cloud, create a project, enable the **Google Sheets API**, create a **service account** and download its JSON key to the Mac mini (e.g. `~/notify/service-account.json`, which git ignores). Set `GOOGLE_SERVICE_ACCOUNT_FILE` to that path, then share the sheet with the service account's email as Viewer.
 
 **Required columns** (header row; case and spaces don't matter): `Name`, `Status`, `Amount`, plus `WhatsApp` (or `Phone`/`Mobile`) and/or `Email`. Any extra column (e.g. `Due Date`) can be used in templates as `{{due_date}}`.
 
@@ -64,9 +64,9 @@ Pick one:
 | Item | Example | Why |
 |---|---|---|
 | **Domain on Cloudflare** | `notify.yourdomain.com` | public HTTPS address for the dashboard and the WhatsApp webhook |
-| **Country code** for local numbers | `63` (PH), `60` (MY), `65` (SG), `971` (UAE)… | turns `0917…` into `63917…` |
-| **Currency / number format** | `AMOUNT_CURRENCY=PHP`, `AMOUNT_LOCALE=en-PH` | how `{{amount_formatted}}` looks |
-| **Time zone** | `Asia/Manila` | schedules and dashboard dates |
+| **Country code** for local numbers | `60` (Malaysia) | turns `012-345 6789` into `60123456789` |
+| **Currency / number format** | `AMOUNT_CURRENCY=MYR`, `AMOUNT_LOCALE=en-MY` | `{{amount_formatted}}` → RM 1,245.00 |
+| **Time zone** | `Asia/Kuala_Lumpur` | schedules and dashboard dates |
 | **Admin email(s) for failure reports** | `ops@yourdomain.com` | consolidated report after each run |
 | **Admin login** | email + strong password | first dashboard account |
 | **Your status types and template wording** | `overdue`, `reminder`, … | so the templates can be set up (and submitted to Meta) |

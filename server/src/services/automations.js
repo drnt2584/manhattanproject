@@ -12,17 +12,27 @@ const RESYNC_AFTER_MS = 60_000;
 const clean = (s) => String(s ?? '').toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** 'yes' | 'no' | null — accepts "Yes", "YES!", "yes i agree", "oo", "Hindi po"… */
+// Words that may follow a one-word answer without changing it ("yes please", "ya betul")
+const FILLERS = new Set(['please', 'thanks', 'thank', 'you', 'sure', 'lah', 'je', 'betul', 'boleh', 'terima', 'kasih', 'sila']);
+
+/**
+ * 'yes' | 'no' | null. Multi-word phrases ("i do not agree", "tidak setuju") match
+ * anywhere; a single word ("ya", "tidak") must be the whole answer or be followed
+ * only by fillers, so "tidak faham" (don't understand) is not read as a refusal.
+ */
 export function classifyConsent(body, cfg) {
   const t = clean(body);
   if (!t) return null;
-  const hit = (words) => words.some((w) => {
-    const x = clean(w);
-    return t === x || t.startsWith(x + ' ');
-  });
-  // check "no" first so "no i don't agree" isn't read as agreement
-  if (hit(cfg.no_words)) return 'no';
-  if (hit(cfg.yes_words)) return 'yes';
+  const tokens = t.split(' ');
+  const matches = (list) => {
+    const phrases = list.map(clean).filter(Boolean);
+    const singles = new Set(phrases.filter((w) => !w.includes(' ')));
+    if (phrases.some((w) => w.includes(' ') && new RegExp(`(^| )${escapeRe(w)}( |$)`).test(t))) return true;
+    return singles.has(tokens[0]) && tokens.slice(1).every((x) => FILLERS.has(x) || singles.has(x));
+  };
+  // "no" first so "no, I do not agree" is never read as agreement
+  if (matches(cfg.no_words)) return 'no';
+  if (matches(cfg.yes_words)) return 'yes';
   return null;
 }
 

@@ -44,6 +44,9 @@ r.put('/:key', async (req, res) => {
   const schema = SCHEMAS[req.params.key];
   if (!schema) throw new HttpError(404, 'Unknown automation');
   const value = parse(schema, req.body);
+  // Don't let an automatic message go out with "[DPO email or phone]" still in it
+  const placeholder = Object.values(value).filter((v) => typeof v === 'string').join('\n').match(/\[[A-Za-z][^\]\n]{2,60}\]/);
+  if (value.enabled && placeholder) throw new HttpError(400, `Replace the placeholder ${placeholder[0]} before turning this on`);
   if (req.params.key === 'reminders') {
     value.unpaid_statuses = value.unpaid_statuses.map((s) => s.toLowerCase());
     value.rules.sort((a, b) => a.days - b.days);

@@ -34,7 +34,7 @@ export const config = {
   amountLocale: env.AMOUNT_LOCALE || 'en-US',
   amountCurrency: env.AMOUNT_CURRENCY || '',
   amountDecimals: int(env.AMOUNT_DECIMALS, 2),
-  // How to read ambiguous dates like 03/04/2026 in the sheet: MDY (US/PH) or DMY
+  // How to read ambiguous dates like 03/04/2026 in the sheet: DMY (Malaysia, UK) or MDY (US)
   dateFormat: (env.DATE_FORMAT || 'MDY').toUpperCase() === 'DMY' ? 'DMY' : 'MDY',
   maxUploadMb: int(env.MAX_UPLOAD_MB, 10),
 

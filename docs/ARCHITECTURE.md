@@ -164,8 +164,8 @@ All `/api` routes except `/api/auth/login` require the session cookie. Every sta
 ### Schedules and runs
 | Method & path | Body | Response |
 |---|---|---|
-| `GET /api/schedules` | – | `{"schedules":[…],"timezone":"Asia/Manila"}` |
-| `POST /api/schedules` | one-time `{"name","run_at":"2026-11-01T01:00:00Z"}` or repeating `{"name","cron":"0 9 1 * *","timezone":"Asia/Manila"}` | `201 {"schedule":{"id","next_run_at","status":"active",…}}` |
+| `GET /api/schedules` | – | `{"schedules":[…],"timezone":"Asia/Kuala_Lumpur"}` |
+| `POST /api/schedules` | one-time `{"name","run_at":"2026-11-01T01:00:00Z"}` or repeating `{"name","cron":"0 9 1 * *","timezone":"Asia/Kuala_Lumpur"}` | `201 {"schedule":{"id","next_run_at","status":"active",…}}` |
 | `POST /api/schedules/:id/cancel` | – | `{"schedule":{…,"status":"cancelled"}}` |
 | `POST /api/runs` (send now) | – | `202 {"run":{"id","status":"queued"}}` · 409 if a run is active |
 | `GET /api/runs` | – | `{"runs":[…]}` |
@@ -180,7 +180,7 @@ All `/api` routes except `/api/auth/login` require the session cookie. Every sta
 | `GET /api/audit/verify` | `{"ok":true,"checked":1234,"head":"…"}` or `{"ok":false,"brokenAt":57,"reason":"content hash mismatch"}` |
 | `GET /api/audit/export.csv?…` | streamed CSV (formula-injection safe) |
 | `GET /api/inbox?unread=1` | `{"conversations":[{"channel","address","contact_name","last_at","unread","last_body"}]}` |
-| `GET /api/inbox/thread?channel=whatsapp&address=63917…` | `{"messages":[…],"notifications":[…]}` (marks read) |
+| `GET /api/inbox/thread?channel=whatsapp&address=60121…` | `{"messages":[…],"notifications":[…]}` (marks read) |
 | `POST /api/inbox/reply` `{"channel","address","body","subject"?}` | `201 {"message":{…}}`. WhatsApp only within 24 h of the contact's last message. |
 | `GET /api/dashboard` | tiles, recent runs, 14-day activity, statuses missing templates |
 | `GET /api/settings/status` | provider configuration (no secrets) |
@@ -195,7 +195,7 @@ All `/api` routes except `/api/auth/login` require the session cookie. Every sta
 | `PUT /api/automations/balance` | `{"enabled","keywords":[…],"reply","paid_reply","not_found_reply"}` |
 | `GET /api/automations/reminders/preview` | `{"today":"2026-10-06","items":[{"name","unit","due_date","days_overdue":6,"stage":5,"template":"reminder_5","template_exists":true}]}` (dry run) |
 | `POST /api/automations/reminders/run` | `202 {"run":{…,"kind":"reminders"}}` |
-| `POST /api/automations/balance/preview` `{"to":"0917…"}` | `{"text":"Hello Ben, …","rows":[3]}` |
+| `POST /api/automations/balance/preview` `{"to":"012-…"}` | `{"text":"Hello Ben, …","rows":[3]}` |
 | `GET /api/automations/consents?status=accepted` · `/consents/export.csv` | consent records |
 
 **Reminder rules**: the worker queues one `kind = reminders` run per day after `reminders.time` (in `APP_TIMEZONE`). The run re-syncs the sheet and selects rows whose status is in `unpaid_statuses` and that have a due date. For each row it picks the **highest** stage whose day count has passed, and skips it if `reminder_sends` already holds `(contact, due date, stage)`. Rows are recorded in `reminder_sends` only after a successful send, so a failed reminder is retried the next day and also appears in that day's failure report.

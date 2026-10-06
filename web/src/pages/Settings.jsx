@@ -44,7 +44,7 @@ export default function Settings() {
           <h2>Send a test</h2>
           <form onSubmit={sendTest} className="stack">
             <select value={t.channel} onChange={(e) => setT({ ...t, channel: e.target.value })}><option value="email">Email</option><option value="whatsapp">WhatsApp</option></select>
-            <input value={t.to} onChange={(e) => setT({ ...t, to: e.target.value })} placeholder={t.channel === 'email' ? 'you@example.com' : '+63 917 123 4567'} required />
+            <input value={t.to} onChange={(e) => setT({ ...t, to: e.target.value })} placeholder={t.channel === 'email' ? 'you@example.com' : '012-345 6789'} required />
             {t.channel === 'whatsapp' && <input value={t.template_name} onChange={(e) => setT({ ...t, template_name: e.target.value })} placeholder="Template name, e.g. hello_world (needed for first contact)" />}
             <Feedback action={test} />
             <button className="primary" disabled={test.busy}>Send test</button>

@@ -61,8 +61,9 @@ export function daysBetween(from, to) {
   return Math.round((Date.parse(to + 'T00:00:00Z') - Date.parse(from + 'T00:00:00Z')) / 86400000);
 }
 
-export function formatDateLong(isoDate) {
+/** "15 October 2026" (DATE_FORMAT=DMY, e.g. Malaysia) or "October 15, 2026" (MDY). */
+export function formatDateLong(isoDate, format = config.dateFormat) {
   if (!isoDate) return '';
-  return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })
+  return new Intl.DateTimeFormat(format === 'DMY' ? 'en-GB' : 'en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })
     .format(new Date(isoDate + 'T00:00:00Z'));
 }

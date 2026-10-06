@@ -62,7 +62,7 @@ export function normalizeEmail(raw) {
   return EMAIL_RE.test(s) ? s : null;
 }
 
-/** "PHP 1,234.50" -> 1234.5 ; returns null when not numeric */
+/** "RM 1,234.50" -> 1234.5 ; returns null when not numeric */
 export function parseAmount(raw) {
   if (raw === null || raw === undefined || raw === '') return null;
   if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null;
@@ -89,5 +89,6 @@ export function formatAmount(n) {
   if (n === null || n === undefined) return '';
   const opts = { minimumFractionDigits: config.amountDecimals, maximumFractionDigits: config.amountDecimals };
   if (config.amountCurrency) Object.assign(opts, { style: 'currency', currency: config.amountCurrency });
-  return new Intl.NumberFormat(config.amountLocale, opts).format(n);
+  // Intl puts a non-breaking space after "RM"; use a plain one so messages copy/paste and match cleanly
+  return new Intl.NumberFormat(config.amountLocale, opts).format(n).replace(/[\u00a0\u202f]/g, ' ');
 }

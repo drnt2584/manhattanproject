@@ -9,6 +9,12 @@ import { canonicalJson } from '../src/lib/canonical.js';
 import { stripQuoted } from '../src/services/imap.js';
 import { csvCell } from '../src/lib/validate.js';
 
+test('normalizePhone (Malaysia)', () => {
+  assert.equal(normalizePhone('012-345 6789', '60'), '60123456789');
+  assert.equal(normalizePhone('+60 11-2345 6789', '60'), '601123456789');
+  assert.equal(normalizePhone('0198765432', '60'), '60198765432');
+});
+
 test('normalizePhone', () => {
   assert.equal(normalizePhone('0917 123 4567', '63'), '639171234567');
   assert.equal(normalizePhone('+63 917-123-4567', '63'), '639171234567');
@@ -34,18 +40,19 @@ test('normalizeEmail / parseAmount / normalizeHeader', () => {
 
 test('render reports missing variables instead of sending blanks', () => {
   const vars = contactVariables({ name: 'Ana Cruz', amount: 1500, fields: { due_date: '2026-10-30' } });
+  assert.equal(vars.amount_formatted, 'RM 1,500.00');
   assert.deepEqual(render('Hi {{ name }}, pay {{amount}} by {{due_date}}', vars), { text: 'Hi Ana Cruz, pay 1500 by 2026-10-30', missing: [] });
   assert.equal(render('Hi {{first_name}}', vars).text, 'Hi Ana');
   assert.deepEqual(render('Ref {{invoice}}', vars).missing, ['invoice']);
 });
 
 test('rowsToContacts maps aliases, normalizes and warns', () => {
-  const rows = parseCsvBuffer(Buffer.from('﻿Full Name,Phone,E-mail,Status Type,Amount Due\nAna,0917 111 2222,ANA@x.com,Overdue,"1,000"\nBen,,bad-email,Paid,abc\n,,,,\n'));
+  const rows = parseCsvBuffer(Buffer.from('﻿Full Name,Phone,E-mail,Status Type,Amount Due\nAna,012-111 2222,ANA@x.com,Overdue,"1,000"\nBen,,bad-email,Paid,abc\n,,,,\n'));
   const { contacts, mapping } = rowsToContacts(rows);
   assert.equal(mapping.name, 'full_name');
   assert.equal(mapping.whatsapp, 'phone');
   assert.equal(contacts.length, 2);
-  assert.deepEqual([contacts[0].whatsapp, contacts[0].email, contacts[0].status, contacts[0].amount], ['639171112222', 'ana@x.com', 'overdue', 1000]);
+  assert.deepEqual([contacts[0].whatsapp, contacts[0].email, contacts[0].status, contacts[0].amount], ['60121112222', 'ana@x.com', 'overdue', 1000]);
   assert.equal(contacts[0].row_number, 2);
   assert.ok(contacts[1].warnings.some((w) => w.includes('invalid email')));
   assert.ok(contacts[1].warnings.includes('amount is not a number'));
