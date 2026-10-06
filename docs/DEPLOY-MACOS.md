@@ -42,7 +42,7 @@ Optional hardening: run the app as a role that can't modify the audit log at all
 ```bash
 sudo mkdir -p /usr/local/var/log/notify && sudo chown "$USER" /usr/local/var/log/notify
 git clone https://github.com/drnt2584/manhattanproject.git ~/notify
-cd ~/notify/server && npm ci || npm install
+cd ~/notify/server && npm install          # also fetches SheetJS (Excel support) from cdn.sheetjs.com
 cp .env.example .env && chmod 600 .env
 openssl rand -hex 32                      # paste the result as SESSION_SECRET
 nano .env                                 # fill in everything from docs/WHAT-I-NEED.md
