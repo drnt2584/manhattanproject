@@ -4,6 +4,7 @@ import { pool } from './db.js';
 import { migrate } from './migrate.js';
 import { claimRun, executeRun } from './services/runner.js';
 import { promoteDueSchedules } from './services/schedules.js';
+import { maybeQueueDailyReminders } from './services/reminders.js';
 import { pollImap } from './services/imap.js';
 import { sleep } from './lib/concurrency.js';
 
@@ -13,6 +14,7 @@ async function schedulerLoop() {
   while (!stopping) {
     try {
       await promoteDueSchedules();
+      await maybeQueueDailyReminders();
       let run;
       while (!stopping && (run = await claimRun())) {
         logger.info({ runId: run.id, trigger: run.trigger }, 'run claimed');

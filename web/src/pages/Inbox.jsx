@@ -36,7 +36,7 @@ function Thread({ conv, onSent, onLoaded }) {
           <div key={m.id} className={`msg ${m.direction}`}>
             {m.subject && <div className="small"><b>{m.subject}</b></div>}
             <div className="msg-body">{m.body}</div>
-            <div className="muted small">{m.direction === 'outbound' ? `You (${m.sent_by_email || 'admin'})` : conv.contact_name || 'Contact'} · {fmtDate(m.created_at)}</div>
+            <div className="muted small">{m.direction === 'outbound' ? (m.auto ? 'Automatic reply' : `You (${m.sent_by_email || 'admin'})`) : conv.contact_name || 'Contact'} · {fmtDate(m.created_at)}</div>
           </div>
         ))}
       </div>

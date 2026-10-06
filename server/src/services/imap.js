@@ -4,6 +4,7 @@ import { config } from '../config.js';
 import { query } from '../db.js';
 import { logger } from '../logger.js';
 import { isKnownAddress, recordInbound } from './inbound.js';
+import { runAutomations } from './automations.js';
 
 /** Strip the quoted original message from a reply so the inbox shows only the response. */
 export function stripQuoted(text) {
@@ -69,7 +70,10 @@ export async function pollImap() {
         body: stripQuoted(mail.text || '') || '(empty message)', providerMessageId: mail.messageId || `imap-${box.uidValidity}-${msg.uid}`,
         inReplyTo: mail.inReplyTo || null, runRecipientId,
       });
-      if (saved) stored++;
+      if (saved) {
+        stored++;
+        await runAutomations([saved]);
+      }
     }
     await query('UPDATE imap_state SET last_uid = $2 WHERE mailbox = $1', [e.imapMailbox, maxUid]);
   } finally {

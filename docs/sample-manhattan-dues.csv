@@ -1,0 +1,5 @@
+Name,Unit,WhatsApp,Email,Status,Billing Period,Amount,Previous Unpaid,Due Date
+Ana Cruz,12A,0917 111 2222,ana@example.com,Unpaid,Q4 2026 (Oct–Dec),"12,450.00",0,10/15/2026
+Ben Reyes,8C,0917 222 3333,ben@example.com,Unpaid,Q4 2026 (Oct–Dec),"9,800.00","9,800.00",09/30/2026
+Carla Santos,15B,0918 333 4444,,Paid,Q4 2026 (Oct–Dec),"12,450.00",0,10/15/2026
+Dino Lim,3F,,dino@example.com,Unpaid,Q4 2026 (Oct–Dec),"7,200.00",0,11/30/2026

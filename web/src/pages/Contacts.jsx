@@ -73,7 +73,10 @@ export default function Contacts() {
             <li><b>WhatsApp</b> — whatsapp, whatsapp number, phone, mobile, contact number</li>
             <li><b>Email</b> — email, email address, e-mail</li>
             <li><b>Status</b> — status, status type, type, category (picks the template)</li>
-            <li><b>Amount</b> — amount, value, balance, amount due, total, points, credits</li>
+            <li><b>Amount</b> — amount, upcoming amount, quarterly dues, dues, amount due, value, balance, total</li>
+            <li><b>Due date</b> (optional, needed for reminders) — due date, payment due, due, pay by, deadline</li>
+            <li><b>Previous unpaid</b> (optional) — previous unpaid, previous balance, arrears, past due</li>
+            <li><b>Unit</b> (optional) — unit, unit no, unit number</li>
           </ul>
           <p className="small">Any other column is also usable in templates, e.g. a “Due Date” column becomes <code>{'{{due_date}}'}</code>.</p>
         </details>
@@ -108,12 +111,12 @@ export default function Contacts() {
         {list.data?.contacts?.length > 0 && (
           <div className="scroll">
             <table>
-              <thead><tr><th>Row</th><th>Name</th><th>WhatsApp</th><th>Email</th><th>Status</th><th className="num">Amount</th><th>Issues</th></tr></thead>
+              <thead><tr><th>Row</th><th>Name</th><th>WhatsApp</th><th>Email</th><th>Status</th><th className="num">Amount</th><th>Due date</th><th>Issues</th></tr></thead>
               <tbody>
                 {list.data.contacts.map((c) => (
                   <tr key={c.id} className={c.warnings.length ? 'row-warn' : ''}>
                     <td>{c.row_number}</td><td>{c.name}</td><td>{c.whatsapp ? `+${c.whatsapp}` : '—'}</td><td>{c.email || '—'}</td>
-                    <td>{c.status}</td><td className="num">{c.amount ?? '—'}</td><td className="small">{c.warnings.join('; ')}</td>
+                    <td>{c.status}</td><td className="num">{c.amount ?? '—'}</td><td className="nowrap">{c.due_date ?? '—'}</td><td className="small">{c.warnings.join('; ')}</td>
                   </tr>
                 ))}
               </tbody>

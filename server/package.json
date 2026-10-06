@@ -12,7 +12,8 @@
     "dev": "node --watch src/index.js",
     "dev:worker": "node --watch src/worker.js",
     "migrate": "node src/migrate.js",
-    "test": "node --test --test-concurrency=1 \"test/*.test.js\""
+    "test": "node --test --test-concurrency=1 \"test/*.test.js\"",
+    "seed": "node src/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

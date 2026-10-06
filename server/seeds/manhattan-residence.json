@@ -1,0 +1,90 @@
+{
+  "templates": [
+    {
+      "status_key": "unpaid",
+      "label": "1. Quarterly association dues notice",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_quarterly_dues_notice",
+      "wa_language": "en",
+      "wa_params": ["name", "unit", "billing_period", "amount_formatted", "previous_unpaid_formatted", "total_due_formatted", "due_date_formatted"],
+      "wa_body": "Good day, {{name}}!\n\nThis is a billing notice from The Manhattan Residence Administration Office for the association dues of Unit {{unit}} covering {{billing_period}}.\n\nUpcoming quarterly dues: {{amount_formatted}}\nPrevious unpaid balance: {{previous_unpaid_formatted}}\nTotal amount due: {{total_due_formatted}}\nDue date: {{due_date_formatted}}\n\nKindly settle on or before the due date. For payment options or questions, simply reply to this message. Thank you.",
+      "email_enabled": true,
+      "email_subject": "Association Dues Notice – Unit {{unit}} – {{billing_period}}",
+      "email_body": "Dear {{name}},\n\nGood day! This is a billing notice from The Manhattan Residence Administration Office for the association dues of Unit {{unit}} covering {{billing_period}}.\n\n    Upcoming quarterly dues:   {{amount_formatted}}\n    Previous unpaid balance:   {{previous_unpaid_formatted}}\n    TOTAL AMOUNT DUE:          {{total_due_formatted}}\n    Due date:                  {{due_date_formatted}}\n\nKindly settle your dues on or before the due date. For payment options or any questions about your statement, simply reply to this email or visit the Administration Office.\n\nIf you have already paid, please disregard this notice.\n\nThank you,\nThe Manhattan Residence Administration Office"
+    },
+    {
+      "status_key": "paid",
+      "label": "Paid accounts – no notice (recorded as skipped)",
+      "wa_enabled": false,
+      "wa_body": "",
+      "wa_params": [],
+      "email_enabled": false,
+      "email_subject": "",
+      "email_body": ""
+    },
+    {
+      "status_key": "reminder_5",
+      "label": "2a. First reminder – due date + 5 days",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_dues_reminder_first",
+      "wa_language": "en",
+      "wa_params": ["name", "unit", "due_date_formatted", "days_overdue", "total_due_formatted"],
+      "wa_body": "Hello {{name}}, this is a friendly reminder from The Manhattan Residence Administration Office.\n\nOur records show that the association dues for Unit {{unit}} are still unpaid. The due date was {{due_date_formatted}}, so the account is now {{days_overdue}} days past due.\n\nTotal amount due: {{total_due_formatted}}\n\nPlease settle at your earliest convenience. If you have already paid, kindly reply with your proof of payment so we can update your account. Thank you.",
+      "email_enabled": true,
+      "email_subject": "Payment Reminder – Unit {{unit}} association dues are {{days_overdue}} days past due",
+      "email_body": "Dear {{name}},\n\nThis is a friendly reminder from The Manhattan Residence Administration Office.\n\nOur records show that the association dues for Unit {{unit}} are still unpaid. The due date was {{due_date_formatted}}, so the account is now {{days_overdue}} days past due.\n\n    TOTAL AMOUNT DUE:  {{total_due_formatted}}\n\nPlease settle at your earliest convenience. If you have already paid, kindly reply to this email with your proof of payment so we can update your account.\n\nThank you,\nThe Manhattan Residence Administration Office"
+    },
+    {
+      "status_key": "reminder_14",
+      "label": "2b. Second reminder – due date + 14 days",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_dues_reminder_second",
+      "wa_language": "en",
+      "wa_params": ["name", "unit", "days_overdue", "due_date_formatted", "total_due_formatted"],
+      "wa_body": "Hello {{name}}, this is a second reminder from The Manhattan Residence Administration Office.\n\nThe association dues for Unit {{unit}} remain unpaid and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\nTotal amount due: {{total_due_formatted}}\n\nWe kindly ask that you settle this balance as soon as possible to keep your account in good standing. If payment has already been made, please reply with your proof of payment. Thank you.",
+      "email_enabled": true,
+      "email_subject": "Second Reminder – Unit {{unit}} association dues are {{days_overdue}} days overdue",
+      "email_body": "Dear {{name}},\n\nThis is a second reminder from The Manhattan Residence Administration Office.\n\nThe association dues for Unit {{unit}} remain unpaid and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\n    TOTAL AMOUNT DUE:  {{total_due_formatted}}\n\nWe kindly ask that you settle this balance as soon as possible to keep your account in good standing. If payment has already been made, please reply to this email with your proof of payment.\n\nThank you,\nThe Manhattan Residence Administration Office"
+    },
+    {
+      "status_key": "final_30",
+      "label": "2c. Final notice – due date + 30 days",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_dues_final_notice",
+      "wa_language": "en",
+      "wa_params": ["name", "unit", "days_overdue", "due_date_formatted", "total_due_formatted"],
+      "wa_body": "FINAL NOTICE: Hello {{name}}, the association dues for Unit {{unit}} at The Manhattan Residence remain unpaid and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\nTotal amount due: {{total_due_formatted}}\n\nPlease settle the full amount immediately, or contact the Administration Office to discuss your account. Unpaid accounts may be subject to the penalties and measures set out in the Association's by-laws. If you have already paid, please reply with your proof of payment. Thank you.",
+      "email_enabled": true,
+      "email_subject": "FINAL NOTICE – Unit {{unit}} association dues {{days_overdue}} days overdue",
+      "email_body": "Dear {{name}},\n\nFINAL NOTICE\n\nThe association dues for Unit {{unit}} at The Manhattan Residence remain unpaid and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\n    TOTAL AMOUNT DUE:  {{total_due_formatted}}\n\nPlease settle the full amount immediately, or contact the Administration Office to discuss your account. Unpaid accounts may be subject to the penalties and measures set out in the Association's by-laws.\n\nIf you have already paid, please reply to this email with your proof of payment so we can update our records.\n\nThe Manhattan Residence Administration Office"
+    }
+  ],
+  "settings": {
+    "reminders": {
+      "enabled": false,
+      "time": "09:00",
+      "unpaid_statuses": ["unpaid"],
+      "rules": [
+        { "days": 5, "template": "reminder_5" },
+        { "days": 14, "template": "reminder_14" },
+        { "days": 30, "template": "final_30" }
+      ]
+    },
+    "privacy": {
+      "enabled": false,
+      "notice": "Good day! Thank you for messaging The Manhattan Residence Administration Office.\n\nDATA PRIVACY NOTICE\nIn compliance with the Data Privacy Act of 2012 (Republic Act No. 10173), please be informed that we collect and process your name, mobile number and the messages you send us solely to respond to your inquiry and to manage communications with the residents and unit owners of The Manhattan Residence. Your information is kept confidential, stored securely, accessed only by authorized administration staff, and not shared with third parties unless required by law. You may ask to access, correct or delete your information at any time by contacting the Administration Office.\n\nDo you agree? Please reply YES or NO.",
+      "accepted_reply": "Thank you! Your consent has been recorded. How may we help you today? If you are a unit owner or resident, please send your full name and unit number so we can assist you.",
+      "declined_reply": "Thank you for your response. We have recorded that you do not consent, and we will not process your personal information further. For any concern, you may visit the Administration Office in person.",
+      "invalid_reply": "Sorry, we didn't catch that. Please reply YES if you agree to our Data Privacy Notice, or NO if you do not.",
+      "yes_words": ["yes", "y", "oo", "opo", "agree", "i agree", "accept", "sige"],
+      "no_words": ["no", "n", "hindi", "ayaw", "ayoko", "decline", "disagree", "i do not agree", "i don't agree"]
+    },
+    "balance": {
+      "enabled": false,
+      "keywords": ["balance", "bill", "billing", "dues", "how much", "magkano", "outstanding", "statement", "soa", "unpaid", "utang", "bayarin"],
+      "reply": "Hello {{first_name}}, here is the latest statement for Unit {{unit}} of The Manhattan Residence:\n\nQuarterly dues ({{billing_period}}): {{amount_formatted}}\nPrevious unpaid balance: {{previous_unpaid_formatted}}\nTotal amount due: {{total_due_formatted}}\nDue date: {{due_date_formatted}} ({{due_status}})\n\nPlease settle your balance as soon as possible. If you have already paid, kindly send us your proof of payment so we can update your account. Thank you!",
+      "paid_reply": "Hello {{first_name}}, Unit {{unit}} has no unpaid association dues as of today. Thank you for your prompt payment!",
+      "not_found_reply": "We could not find a unit account linked to this number. Please send your full name and unit number, and the Administration Office will assist you."
+    }
+  }
+}

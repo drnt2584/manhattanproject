@@ -103,6 +103,9 @@ erDiagram
 | `messages` | Replies inbox: inbound replies and admin answers |
 | `audit_log` | **append-only**, hash-chained record of everything |
 | `imap_state` | last processed IMAP UID |
+| `settings` | automation settings (reminders, privacy, balance) |
+| `reminder_sends` | which reminder stage was delivered for which account and due date |
+| `consents` | Data Privacy Notice answers from people outside the contact list |
 
 ### Audit log integrity
 
@@ -182,6 +185,26 @@ All `/api` routes except `/api/auth/login` require the session cookie. Every sta
 | `GET /api/dashboard` | tiles, recent runs, 14-day activity, statuses missing templates |
 | `GET /api/settings/status` | provider configuration (no secrets) |
 | `POST /api/settings/test` `{"channel","to","template_name"?}` | `{"ok":true,"id"}` |
+
+### Automations
+| Method & path | Body / response |
+|---|---|
+| `GET /api/automations` | `{"settings":{"reminders":{…},"privacy":{…},"balance":{…}},"lastReminderRun":{"date","run_id"},"consents":{"accepted":3,"declined":1}}` |
+| `PUT /api/automations/reminders` | `{"enabled":true,"time":"09:00","unpaid_statuses":["unpaid"],"rules":[{"days":5,"template":"reminder_5"},{"days":14,"template":"reminder_14"},{"days":30,"template":"final_30"}]}` |
+| `PUT /api/automations/privacy` | `{"enabled","notice","accepted_reply","declined_reply","invalid_reply","yes_words":[…],"no_words":[…]}` |
+| `PUT /api/automations/balance` | `{"enabled","keywords":[…],"reply","paid_reply","not_found_reply"}` |
+| `GET /api/automations/reminders/preview` | `{"today":"2026-10-06","items":[{"name","unit","due_date","days_overdue":6,"stage":5,"template":"reminder_5","template_exists":true}]}` (dry run) |
+| `POST /api/automations/reminders/run` | `202 {"run":{…,"kind":"reminders"}}` |
+| `POST /api/automations/balance/preview` `{"to":"0917…"}` | `{"text":"Hello Ben, …","rows":[3]}` |
+| `GET /api/automations/consents?status=accepted` · `/consents/export.csv` | consent records |
+
+**Reminder rules**: the worker queues one `kind = reminders` run per day after `reminders.time` (in `APP_TIMEZONE`). The run re-syncs the sheet and selects rows whose status is in `unpaid_statuses` and that have a due date. For each row it picks the **highest** stage whose day count has passed, and skips it if `reminder_sends` already holds `(contact, due date, stage)`. Rows are recorded in `reminder_sends` only after a successful send, so a failed reminder is retried the next day and also appears in that day's failure report.
+
+**Inbound automations** run after the webhook has been acknowledged (WhatsApp) or after an IMAP message is stored (email):
+1. *Privacy* (WhatsApp only): a sender with a `pending` consent record → YES/NO is classified and recorded. A sender who is not in the active sheet and has no consent record → the notice is sent and a `pending` record is created. Known residents never get the notice.
+2. *Balance*: keyword match → re-sync the Google Sheet (at most once a minute) → one reply covering every row with that number or email. If a value the reply needs is missing, no automatic reply is sent and the admin answers manually.
+
+Every automatic reply is stored in the inbox (`messages.auto = true`) and audited (`auto_reply_sent`, `privacy_notice_sent`, `privacy_consent_accepted` / `privacy_consent_declined`, `balance_inquiry`).
 
 ### Webhooks (public)
 | Method & path | Notes |

@@ -33,7 +33,7 @@ export default function RunDetail() {
       <Feedback action={cancel} />
       <section className="card">
         <dl className="facts">
-          <div><dt>Trigger</dt><dd>{run.trigger === 'schedule' ? `Schedule: ${run.schedule_name}` : 'Send now'}</dd></div>
+          <div><dt>Trigger</dt><dd>{run.kind === 'reminders' ? `Overdue reminders (${run.trigger === 'automation' ? 'daily check' : 'sent manually'})` : run.trigger === 'schedule' ? `Schedule: ${run.schedule_name}` : 'Send now'}</dd></div>
           <div><dt>Source</dt><dd>{run.source_label || '—'}</dd></div>
           <div><dt>Started</dt><dd>{fmtDate(run.started_at)}</dd></div>
           <div><dt>Finished</dt><dd>{fmtDate(run.finished_at)}</dd></div>
@@ -74,7 +74,7 @@ export default function RunDetail() {
         </div>
         <div className="scroll">
           <table>
-            <thead><tr><th>Row</th><th>Contact</th><th>Channel</th><th>Address</th><th>Status type</th><th>Result</th><th>Tries</th><th>Detail</th></tr></thead>
+            <thead><tr><th>Row</th><th>Contact</th><th>Channel</th><th>Address</th><th>Template</th><th>Result</th><th>Tries</th><th>Detail</th></tr></thead>
             <tbody>
               {recipients.map((r) => (
                 <React.Fragment key={r.id}>

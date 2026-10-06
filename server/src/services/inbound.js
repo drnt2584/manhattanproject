@@ -30,7 +30,8 @@ export async function isKnownAddress(channel, address) {
  */
 export async function recordInbound({ channel, address, body, subject = null, providerMessageId = null, inReplyTo = null, runRecipientId = null, name = null, raw = {} }) {
   const linked = runRecipientId ? { id: runRecipientId } : await lastOutbound(channel, address);
-  const contact_name = name || linked?.contact_name || (await contactName(channel, address));
+  // Sheet name first; for people not in the list fall back to their WhatsApp profile name
+  const contact_name = name || linked?.contact_name || (await contactName(channel, address)) || raw.profile_name || null;
   const { rows } = await query(
     `INSERT INTO messages (channel, direction, address, contact_name, subject, body, provider_message_id, in_reply_to, run_recipient_id)
      VALUES ($1,'inbound',$2,$3,$4,$5,$6,$7,$8)
@@ -48,6 +49,7 @@ export async function recordInbound({ channel, address, body, subject = null, pr
 
 /** Handle a WhatsApp Cloud API webhook payload: inbound messages + delivery statuses. */
 export async function handleWhatsappWebhook(payload) {
+  const received = [];
   for (const entry of payload.entry ?? []) {
     for (const change of entry.changes ?? []) {
       const v = change.value ?? {};
@@ -60,10 +62,11 @@ export async function handleWhatsappWebhook(payload) {
           const { rows } = await query('SELECT id FROM run_recipients WHERE provider_message_id = $1', [m.context.id]);
           runRecipientId = rows[0]?.id ?? null;
         }
-        await recordInbound({
+        const saved = await recordInbound({
           channel: 'whatsapp', address: m.from, body, providerMessageId: m.id, inReplyTo: m.context?.id ?? null,
           runRecipientId, raw: { type: m.type, profile_name: names[m.from] ?? null },
         });
+        if (saved) received.push({ ...saved, profile_name: names[m.from] ?? null });
       }
       // Delivery receipts are appended as new audit entries (the log is never updated).
       for (const s of v.statuses ?? []) {
@@ -77,4 +80,5 @@ export async function handleWhatsappWebhook(payload) {
       }
     }
   }
+  return received; // new (non-duplicate) inbound messages, for automations
 }

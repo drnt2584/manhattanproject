@@ -18,7 +18,7 @@ export default function Runs() {
               {data.runs.map((r) => (
                 <tr key={r.id}>
                   <td><Link to={`/runs/${r.id}`}>#{r.id}</Link></td>
-                  <td>{r.trigger === 'schedule' ? `Schedule: ${r.schedule_name ?? r.schedule_id}` : 'Send now'}</td>
+                  <td>{r.kind === 'reminders' ? `Overdue reminders (${r.trigger === 'automation' ? 'daily' : 'manual'})` : r.trigger === 'schedule' ? `Schedule: ${r.schedule_name ?? r.schedule_id}` : 'Send now'}</td>
                   <td>{fmtDate(r.created_at)}</td>
                   <td>{fmtDate(r.finished_at)}</td>
                   <td><Badge value={r.status} /></td>

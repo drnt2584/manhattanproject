@@ -1,9 +1,10 @@
-import { formatAmount } from './normalize.js';
+import { formatAmount, parseAmount } from './normalize.js';
+import { todayIso, daysBetween, formatDateLong } from './dates.js';
 
 const VAR_RE = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
 
 /** Variables available to templates for one contact. */
-export function contactVariables(contact) {
+export function contactVariables(contact, today = todayIso()) {
   const vars = {};
   for (const [k, v] of Object.entries(contact.fields || {})) {
     vars[k] = v === null || v === undefined ? '' : String(v);
@@ -15,6 +16,33 @@ export function contactVariables(contact) {
   vars.amount_formatted = formatAmount(contact.amount);
   vars.email = contact.email ?? '';
   vars.whatsapp = contact.whatsapp ?? '';
+
+  // Every numeric column also gets a currency-formatted twin: {{previous_unpaid_formatted}}
+  for (const [k, v] of Object.entries(contact.fields || {})) {
+    const n = parseAmount(v);
+    if (n !== null && vars[`${k}_formatted`] === undefined) vars[`${k}_formatted`] = formatAmount(n);
+  }
+  // A blank "previous unpaid" cell means nothing is owed from earlier bills
+  const hasPrev = contact.fields && Object.hasOwn(contact.fields, 'previous_unpaid');
+  const prev = hasPrev ? (parseAmount(contact.fields.previous_unpaid) ?? 0) : null;
+  if (hasPrev) {
+    vars.previous_unpaid = String(prev);
+    vars.previous_unpaid_formatted = formatAmount(prev);
+  }
+  if (contact.amount !== null && contact.amount !== undefined) {
+    const total = Math.round(((contact.amount ?? 0) + (prev ?? 0)) * 100) / 100;
+    vars.total_due = String(total);
+    vars.total_due_formatted = formatAmount(total);
+  }
+
+  if (contact.due_date) {
+    const days = daysBetween(contact.due_date, today);
+    vars.due_date_formatted = formatDateLong(contact.due_date);
+    vars.days_overdue = String(Math.max(0, days));
+    vars.days_until_due = String(Math.max(0, -days));
+    vars.due_status = days > 0 ? `overdue by ${days} day${days === 1 ? '' : 's'}`
+      : days === 0 ? 'due today' : `due in ${-days} day${days === -1 ? '' : 's'}`;
+  }
   return vars;
 }
 

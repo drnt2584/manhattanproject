@@ -39,7 +39,7 @@ export function useLoad(fn, deps = [], pollMs = 0) {
 const STATUS_TONE = {
   completed: 'ok', sent: 'ok', active: 'ok', delivered: 'ok', read: 'ok', received: 'info',
   completed_with_failures: 'warn', retrying: 'warn', skipped: 'muted', cancelled: 'muted', pending: 'info', queued: 'info', running: 'info', sending: 'info',
-  failed: 'bad',
+  failed: 'bad', accepted: 'ok', declined: 'bad',
 };
 const LABEL = { completed_with_failures: 'completed with failures' };
 

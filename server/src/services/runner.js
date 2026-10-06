@@ -8,11 +8,12 @@ import { email } from '../providers/email.js';
 import { contactVariables, render } from '../lib/template.js';
 import { mapPool, sleep } from '../lib/concurrency.js';
 import { HttpError, SendError } from '../lib/errors.js';
+import { reminderPlan, recordReminderSends, contactKey } from './reminders.js';
 
 const CHANNEL_ORDER = ['whatsapp', 'email']; // WhatsApp list first, then email list
 
 /** Queue a run. Rejects if another run is already queued or in progress. */
-export async function requestRun({ trigger, scheduleId = null, admin = null }, client = null) {
+export async function requestRun({ trigger, kind = 'broadcast', scheduleId = null, admin = null }, client = null) {
   const exec = async (c) => {
     const busy = await c.query("SELECT id FROM runs WHERE status IN ('queued','running') LIMIT 1");
     if (busy.rowCount) {
@@ -21,12 +22,12 @@ export async function requestRun({ trigger, scheduleId = null, admin = null }, c
     const src = await c.query('SELECT id FROM data_sources WHERE is_active LIMIT 1');
     if (!src.rowCount && trigger === 'manual') throw new HttpError(400, 'Upload a file or connect a Google Sheet first');
     const { rows: [run] } = await c.query(
-      'INSERT INTO runs (trigger, schedule_id, source_id, requested_by) VALUES ($1,$2,$3,$4) RETURNING *',
-      [trigger, scheduleId, src.rows[0]?.id ?? null, admin?.id ?? null],
+      'INSERT INTO runs (trigger, kind, schedule_id, source_id, requested_by) VALUES ($1,$2,$3,$4,$5) RETURNING *',
+      [trigger, kind, scheduleId, src.rows[0]?.id ?? null, admin?.id ?? null],
     );
     await audit({
-      event: 'run_requested', actor: admin ? `admin:${admin.email}` : 'scheduler', run_id: run.id,
-      details: { trigger, schedule_id: scheduleId, source_id: run.source_id },
+      event: 'run_requested', actor: admin ? `admin:${admin.email}` : trigger === 'automation' ? 'automation' : 'scheduler', run_id: run.id,
+      details: { trigger, kind, schedule_id: scheduleId, source_id: run.source_id },
     }, c);
     return run;
   };
@@ -35,13 +36,28 @@ export async function requestRun({ trigger, scheduleId = null, admin = null }, c
 
 /** Build the recipient list for a run: one row per (contact, channel), with content rendered up-front. */
 async function buildRecipients(run) {
-  const { rows: contacts } = await query('SELECT * FROM contacts WHERE source_id = $1 ORDER BY row_number', [run.source_id]);
   const { rows: templates } = await query('SELECT * FROM templates');
   const byStatus = new Map(templates.map((t) => [t.status_key, t]));
+  // Broadcast: every contact, template chosen by its status.
+  // Reminders: only unpaid contacts past a reminder threshold, template chosen by the reminder stage.
+  let items;
+  if (run.kind === 'reminders') {
+    items = (await reminderPlan(run.source_id)).map(({ contact, rule }) => ({
+      contact, key: rule.template, tpl: byStatus.get(rule.template),
+      extra: { contact_key: contactKey(contact), due_date: contact.due_date, reminder_days: rule.days },
+      missing: `No template "${rule.template}" for the due date +${rule.days} days reminder`,
+    }));
+  } else {
+    const { rows: contacts } = await query('SELECT * FROM contacts WHERE source_id = $1 ORDER BY row_number', [run.source_id]);
+    items = contacts.map((c) => ({
+      contact: c, key: c.status, tpl: byStatus.get(c.status) ?? byStatus.get('*'), extra: {},
+      missing: `No template for status "${c.status ?? '(blank)'}"`,
+    }));
+  }
   const out = [];
 
-  for (const c of contacts) {
-    const base = { contact_id: c.id, row_number: c.row_number, contact_name: c.name, status_key: c.status };
+  for (const { contact: c, key, tpl, extra, missing: missingTemplate } of items) {
+    const base = { contact_id: c.id, row_number: c.row_number, contact_name: c.name, status_key: key, ...extra };
     const channels = [];
     if (c.whatsapp) channels.push(['whatsapp', c.whatsapp]);
     if (c.email) channels.push(['email', c.email]);
@@ -49,12 +65,11 @@ async function buildRecipients(run) {
       out.push({ ...base, channel: 'none', address: null, state: 'failed', last_error: `No valid WhatsApp number or email (${c.warnings.join('; ') || 'empty'})` });
       continue;
     }
-    const tpl = byStatus.get(c.status) ?? byStatus.get('*');
     const vars = contactVariables(c);
     for (const [channel, address] of channels) {
       const r = { ...base, channel, address, template_id: tpl?.id ?? null };
       if (!tpl) {
-        out.push({ ...r, state: 'failed', last_error: `No template for status "${c.status ?? '(blank)'}"` });
+        out.push({ ...r, state: 'failed', last_error: missingTemplate });
         continue;
       }
       if (channel === 'whatsapp') {
@@ -89,11 +104,12 @@ async function buildRecipients(run) {
     for (let i = 0; i < out.length; i += 300) {
       const part = out.slice(i, i + 300);
       const cols = ['run_id', 'contact_id', 'row_number', 'contact_name', 'channel', 'address', 'status_key', 'template_id',
-        'rendered_subject', 'rendered_body', 'wa_payload', 'state', 'last_error'];
+        'rendered_subject', 'rendered_body', 'wa_payload', 'state', 'last_error', 'contact_key', 'due_date', 'reminder_days'];
       const params = [];
       const values = part.map((r, j) => {
         params.push(run.id, r.contact_id, r.row_number, r.contact_name, r.channel, r.address, r.status_key, r.template_id ?? null,
-          r.rendered_subject ?? null, r.rendered_body ?? null, r.wa_payload ? JSON.stringify(r.wa_payload) : null, r.state, r.last_error ?? null);
+          r.rendered_subject ?? null, r.rendered_body ?? null, r.wa_payload ? JSON.stringify(r.wa_payload) : null, r.state, r.last_error ?? null,
+          r.contact_key ?? null, r.due_date ?? null, r.reminder_days ?? null);
         return '(' + cols.map((_, k) => `$${j * cols.length + k + 1}`).join(',') + ')';
       });
       await client.query(`INSERT INTO run_recipients (${cols.join(',')}) VALUES ${values.join(',')}`, params);
@@ -207,6 +223,7 @@ async function finalize(run, cancelled) {
       WHERE id = $1 RETURNING *`,
     [run.id, status, counts.sent, counts.failed, counts.skipped, counts.total, JSON.stringify(failures)],
   );
+  if (run.kind === 'reminders') await recordReminderSends(run.id);
   await audit({ event: 'run_completed', run_id: run.id, status, details: { sent: done.sent, failed: done.failed, skipped: done.skipped, total: done.total } });
 
   // One consolidated notification after the whole list has been processed.

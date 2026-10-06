@@ -21,6 +21,7 @@ import inboxRoutes from './routes/inbox.js';
 import dashboardRoutes from './routes/dashboard.js';
 import settingsRoutes from './routes/settings.js';
 import webhookRoutes from './routes/webhooks.js';
+import automationRoutes from './routes/automations.js';
 
 const webDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../web/dist');
 
@@ -75,6 +76,7 @@ export function createApp() {
   api.use('/audit', auditRoutes);
   api.use('/inbox', inboxRoutes);
   api.use('/settings', settingsRoutes);
+  api.use('/automations', automationRoutes);
   api.use((_req, _res, next) => next(new HttpError(404, 'Not found')));
   app.use('/api', api);
 

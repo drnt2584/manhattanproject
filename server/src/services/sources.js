@@ -11,12 +11,12 @@ async function replaceContacts(client, sourceId, contacts) {
     const values = [];
     const params = [];
     part.forEach((c, j) => {
-      const b = j * 9;
-      values.push(`($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7},$${b + 8},$${b + 9})`);
-      params.push(sourceId, c.row_number, c.name, c.whatsapp, c.email, c.status, c.amount, c.fields, JSON.stringify(c.warnings));
+      const b = j * 10;
+      values.push(`(${Array.from({ length: 10 }, (_, k) => `$${b + k + 1}`).join(',')})`);
+      params.push(sourceId, c.row_number, c.name, c.whatsapp, c.email, c.status, c.amount, c.due_date ?? null, c.fields, JSON.stringify(c.warnings));
     });
     await client.query(
-      `INSERT INTO contacts (source_id, row_number, name, whatsapp, email, status, amount, fields, warnings) VALUES ${values.join(',')}`,
+      `INSERT INTO contacts (source_id, row_number, name, whatsapp, email, status, amount, due_date, fields, warnings) VALUES ${values.join(',')}`,
       params,
     );
   }

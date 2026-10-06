@@ -1,8 +1,9 @@
 import { createRequire } from 'node:module';
 import { parse as parseCsv } from 'csv-parse/sync';
 import { HttpError } from '../lib/errors.js';
+import { parseDate } from '../lib/dates.js';
 import {
-  normalizeHeader, detectColumns, normalizePhone, normalizeEmail, parseAmount, normalizeStatus,
+  OPTIONAL_FIELDS, normalizeHeader, detectColumns, normalizePhone, normalizeEmail, parseAmount, normalizeStatus,
 } from '../lib/normalize.js';
 
 const require = createRequire(import.meta.url);
@@ -71,6 +72,8 @@ export function rowsToContacts(rows) {
       fields[c.key] = v === null || v === undefined ? '' : String(v).trim();
     }
     if (Object.values(fields).every((v) => v === '')) return; // blank line
+    // Expose optional columns under canonical names ({{unit}}, {{previous_unpaid}}, {{due_date}})
+    for (const f of OPTIONAL_FIELDS) if (map[f] && map[f] !== f && fields[f] === undefined) fields[f] = fields[map[f]];
     const warnings = [];
     const name = map.name ? fields[map.name] || null : null;
     const rawPhone = map.whatsapp ? fields[map.whatsapp] : '';
@@ -79,13 +82,16 @@ export function rowsToContacts(rows) {
     const email = normalizeEmail(rawEmail);
     const status = map.status ? normalizeStatus(fields[map.status]) : null;
     const amount = map.amount ? parseAmount(fields[map.amount]) : null;
+    const due_date = map.due_date ? parseDate(fields[map.due_date]) : null;
     if (!name) warnings.push('missing name');
+    if (map.due_date && fields[map.due_date] && !due_date) warnings.push(`unreadable due date "${fields[map.due_date]}"`);
+    if (map.previous_unpaid && fields[map.previous_unpaid] && parseAmount(fields[map.previous_unpaid]) === null) warnings.push('previous unpaid is not a number');
     if (!status) warnings.push('missing status');
     if (map.amount && amount === null) warnings.push('amount is not a number');
     if (rawPhone && !whatsapp) warnings.push(`invalid WhatsApp number "${rawPhone}"`);
     if (rawEmail && !email) warnings.push(`invalid email "${rawEmail}"`);
     if (!whatsapp && !email) warnings.push('no WhatsApp number or email');
-    contacts.push({ row_number: i + 2, name, whatsapp, email, status, amount, fields, warnings });
+    contacts.push({ row_number: i + 2, name, whatsapp, email, status, amount, due_date, fields, warnings });
   });
   if (!contacts.length) throw new HttpError(400, 'The sheet has no data rows');
   return { contacts, columns, mapping: map };

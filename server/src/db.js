@@ -4,6 +4,8 @@ import { logger } from './logger.js';
 
 // NUMERIC -> JS number (amounts here are well within double precision)
 pg.types.setTypeParser(1700, (v) => (v === null ? null : Number(v)));
+// DATE -> 'YYYY-MM-DD' string (no timezone shifting)
+pg.types.setTypeParser(1082, (v) => v);
 // BIGINT -> JS number for ids/counts
 pg.types.setTypeParser(20, (v) => (v === null ? null : Number(v)));
 

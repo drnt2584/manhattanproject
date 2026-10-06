@@ -11,6 +11,7 @@ import RunDetail from './pages/RunDetail.jsx';
 import Inbox from './pages/Inbox.jsx';
 import Audit from './pages/Audit.jsx';
 import Settings from './pages/Settings.jsx';
+import Automations, { Consents } from './pages/Automations.jsx';
 
 const NAV = [
   ['/', 'Dashboard'],
@@ -18,7 +19,9 @@ const NAV = [
   ['/templates', 'Templates'],
   ['/schedules', 'Send & schedule'],
   ['/runs', 'Send history'],
+  ['/automations', 'Automations'],
   ['/inbox', 'Replies'],
+  ['/consents', 'Privacy consents'],
   ['/audit', 'Audit log'],
   ['/settings', 'Settings'],
 ];
@@ -75,6 +78,8 @@ export default function App() {
           <Route path="/runs" element={<Runs />} />
           <Route path="/runs/:id" element={<RunDetail />} />
           <Route path="/inbox" element={<Inbox onRead={() => api.get('/dashboard').then((d) => setUnread(d.unread)).catch(() => {})} />} />
+          <Route path="/automations" element={<Automations />} />
+          <Route path="/consents" element={<Consents />} />
           <Route path="/audit" element={<Audit />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />

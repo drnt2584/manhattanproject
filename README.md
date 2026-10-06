@@ -12,6 +12,7 @@ A web dashboard that reads a contact list (CSV / Excel upload or a Google Sheets
 | Hosting | Mac mini (macOS) + PM2, published through a **Cloudflare Tunnel** |
 
 **Start here**
+- [docs/TEMPLATES-MANHATTAN-RESIDENCE.md](docs/TEMPLATES-MANHATTAN-RESIDENCE.md): the Manhattan Residence messages (bill notice, reminders, privacy notice, balance replies) and the WhatsApp templates to submit to Meta. Load them with `npm run seed -- seeds/manhattan-residence.json`.
 - [docs/WHAT-I-NEED.md](docs/WHAT-I-NEED.md): accounts and credentials to set up (WhatsApp number, email, and so on)
 - [docs/DEPLOY-MACOS.md](docs/DEPLOY-MACOS.md): install on the Mac mini and publish it with Cloudflare
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): diagrams, data model, API reference, security, scaling
@@ -24,7 +25,11 @@ A web dashboard that reads a contact list (CSV / Excel upload or a Google Sheets
 4. **Order**: the whole WhatsApp list is sent first, then the whole email list. A contact with both gets both.
 5. **Failures**: transient errors are retried up to 3 times. Each attempt is logged. Rows that can't be sent are recorded as failed with the reason: invalid number, no template for the status, a missing amount, provider rejection. **After the whole list has been processed**, one consolidated failure report is emailed to the admin and shown on the run page (also downloadable as CSV).
 6. **Audit log**: append-only. The database blocks UPDATE, DELETE and TRUNCATE, and each entry carries a SHA-256 hash of the previous one. **Verify integrity** re-checks the whole chain. Logins, template edits, schedule changes, sends, delivery receipts, replies and admin replies are all recorded. Export to CSV.
-7. **Replies**: inbound WhatsApp messages (via webhook) and email replies (via IMAP) are stored. Only replies from contacts are kept. You answer from the dashboard.
+7. **Automations** (Automations page):
+   - **Overdue reminders**: a daily check re-reads the sheet. Accounts still marked unpaid get a reminder at configurable stages after the due date (default +5, +14, +30 days), each stage once per bill.
+   - **Data Privacy Notice**: sent automatically to people not in the list who message on WhatsApp. Their YES/NO is recorded on the **Privacy consents** page.
+   - **Balance inquiries**: residents who ask about their balance get an automatic reply with their latest figures and days overdue.
+8. **Replies**: inbound WhatsApp messages (via webhook) and email replies (via IMAP) are stored. Only replies from contacts are kept. You answer from the dashboard.
 
 ## Run it locally (5 minutes, no credentials needed)
 
