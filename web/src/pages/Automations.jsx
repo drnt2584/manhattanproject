@@ -99,7 +99,7 @@ function Privacy({ initial, counts, onSaved }) {
   };
   return (
     <section className="card">
-      <h2>Data privacy notice (WhatsApp)</h2>
+      <h2>Data privacy notice (chat)</h2>
       <p className="muted">When someone who is <b>not in the contact list</b> messages for the first time, they automatically get this notice. Their YES or NO is recorded in <Link to="/consents">Privacy consents</Link> ({counts.accepted ?? 0} accepted, {counts.declined ?? 0} declined, {counts.pending ?? 0} waiting).</p>
       <form onSubmit={submit} className="stack">
         <Toggle value={s.enabled} onChange={(v) => setS({ ...s, enabled: v })} label="Send the privacy notice to new, unknown senders" />
@@ -135,7 +135,7 @@ function Balance({ initial, onSaved }) {
 
   return (
     <section className="card">
-      <h2>Balance inquiries (WhatsApp and email)</h2>
+      <h2>Balance inquiries (chat and email)</h2>
       <p className="muted">When a resident in the contact list asks about their balance, the app re-reads the sheet and replies with their latest figures and how many days overdue they are. The question and the reply also appear in Replies and in the audit log.</p>
       <form onSubmit={submit} className="stack">
         <Toggle value={s.enabled} onChange={(v) => setS({ ...s, enabled: v })} label="Answer balance questions automatically" />
@@ -160,15 +160,54 @@ function Balance({ initial, onSaved }) {
   );
 }
 
+function TelegramBot({ initial, status, onSaved }) {
+  const [s, setS] = useState(initial);
+  const save = useAction();
+  const set = (k) => (e) => setS({ ...s, [k]: e.target.value });
+  const submit = (e) => {
+    e.preventDefault();
+    save.run(() => api.put('/automations/telegram', s), 'Bot messages saved.').then((r) => r && onSaved());
+  };
+  return (
+    <section className="card">
+      <h2>Telegram bot</h2>
+      <p className="muted">
+        A Telegram bot can only message people who opened it and shared their phone number. Send residents the bot link
+        {status?.link ? <> (<a href={status.link} target="_blank" rel="noreferrer">{status.link}</a>)</> : ''}. When they tap
+        “Share my phone number”, the app matches the number to their row in the sheet. {status ? `${status.linked} joined so far.` : ''}
+      </p>
+      <form onSubmit={submit} className="stack">
+        <div className="grid-2">
+          <label>Welcome (after /start)<textarea rows={6} value={s.welcome} onChange={set('welcome')} /></label>
+          <label>Linked to a unit<textarea rows={6} value={s.linked_reply} onChange={set('linked_reply')} /></label>
+        </div>
+        <div className="grid-3">
+          <label>Message sent before sharing the number<textarea rows={4} value={s.share_prompt} onChange={set('share_prompt')} /></label>
+          <label>Number not in the sheet (then the privacy notice follows)<textarea rows={4} value={s.number_received} onChange={set('number_received')} /></label>
+          <label>Already linked<textarea rows={4} value={s.already_linked} onChange={set('already_linked')} /></label>
+        </div>
+        <div className="grid-2">
+          <label>Shared someone else's number<textarea rows={3} value={s.not_own_number} onChange={set('not_own_number')} /></label>
+          <label>Button text<input value={s.share_button} onChange={set('share_button')} /></label>
+        </div>
+        <Feedback action={save} />
+        <div><button className="primary" disabled={save.busy}>Save bot messages</button></div>
+      </form>
+    </section>
+  );
+}
+
 export default function Automations() {
   const { data, error, reload } = useLoad(() => api.get('/automations'), []);
   const tpl = useLoad(() => api.get('/templates'), []);
+  const status = useLoad(() => api.get('/settings/status'), []);
   if (error) return <ErrorNote error={error} />;
   if (!data || !tpl.data) return <div className="muted">Loading…</div>;
   const keys = tpl.data.templates.map((t) => t.status_key);
   return (
     <div className="page">
       <header className="page-head"><h1>Automations</h1></header>
+      {status.data?.chatChannel === 'telegram' && <TelegramBot initial={data.settings.telegram} status={status.data.telegram} onSaved={reload} />}
       <Reminders initial={data.settings.reminders} lastRun={data.lastReminderRun} templates={keys} onSaved={reload} />
       <Privacy initial={data.settings.privacy} counts={data.consents} onSaved={reload} />
       <Balance initial={data.settings.balance} onSaved={reload} />
@@ -196,12 +235,12 @@ export function Consents() {
         {data?.consents?.length === 0 && <Empty>No one yet.</Empty>}
         {data?.consents?.length > 0 && (
           <table>
-            <thead><tr><th>Name (WhatsApp profile)</th><th>Number</th><th>Answer</th><th>Notice sent</th><th>Answered</th><th>Their reply</th></tr></thead>
+            <thead><tr><th>Name (chat profile)</th><th>Number</th><th>Answer</th><th>Notice sent</th><th>Answered</th><th>Their reply</th></tr></thead>
             <tbody>
               {data.consents.map((c) => (
                 <tr key={c.id}>
                   <td>{c.profile_name || '—'} <ChannelTag channel={c.channel} /></td>
-                  <td>{c.channel === 'whatsapp' ? `+${c.address}` : c.address}</td>
+                  <td>{c.channel === 'email' ? c.address : `+${c.address}`}</td>
                   <td><Badge value={c.status === 'pending' ? 'pending' : c.status} /></td>
                   <td>{fmtDate(c.notice_sent_at)}</td><td>{fmtDate(c.responded_at)}</td><td className="small">{c.response_text}</td>
                 </tr>

@@ -5,6 +5,7 @@ import { migrate } from './migrate.js';
 import { claimRun, executeRun } from './services/runner.js';
 import { promoteDueSchedules } from './services/schedules.js';
 import { maybeQueueDailyReminders } from './services/reminders.js';
+import { telegramPollLoop } from './services/telegramBot.js';
 import { pollImap } from './services/imap.js';
 import { sleep } from './lib/concurrency.js';
 
@@ -42,8 +43,8 @@ async function imapLoop() {
 async function main() {
   assertProductionConfig();
   if (!config.skipMigrations) await migrate();
-  logger.info({ whatsapp: config.whatsapp.provider, email: config.email.provider, imap: config.email.imapEnabled }, 'worker started');
-  await Promise.all([schedulerLoop(), imapLoop()]);
+  logger.info({ chat: config.chatChannel, whatsapp: config.whatsapp.provider, telegram: config.telegram.botToken ? 'bot' : 'mock', email: config.email.provider, imap: config.email.imapEnabled }, 'worker started');
+  await Promise.all([schedulerLoop(), imapLoop(), telegramPollLoop(() => stopping)]);
   await pool.end();
   logger.info('worker stopped');
 }

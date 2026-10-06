@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api, qs } from '../api.js';
-import { ChannelTag, Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useLoad } from '../util.jsx';
+import { CHANNEL_LABEL, ChannelTag, Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useLoad } from '../util.jsx';
 
 function Thread({ conv, onSent, onLoaded }) {
   const { data, error, reload } = useLoad(() => api.get('/inbox/thread' + qs({ channel: conv.channel, address: conv.address })), [conv.channel, conv.address], 15_000);
@@ -22,7 +22,7 @@ function Thread({ conv, onSent, onLoaded }) {
     <div className="thread">
       <div className="thread-head">
         <strong>{conv.contact_name || conv.address}</strong> <ChannelTag channel={conv.channel} />
-        <div className="muted small">{conv.channel === 'whatsapp' ? `+${conv.address}` : conv.address}</div>
+        <div className="muted small">{conv.channel === 'email' ? conv.address : conv.address.startsWith('tg:') ? 'Telegram user (has not shared number)' : `+${conv.address}`}</div>
       </div>
       <ErrorNote error={error} />
       {data?.notifications?.length > 0 && (
@@ -42,7 +42,7 @@ function Thread({ conv, onSent, onLoaded }) {
       </div>
       {waExpired && <div className="note warn small">More than 24 hours since their last WhatsApp message — WhatsApp will only accept an approved template now, so free-text replies are blocked.</div>}
       <form onSubmit={send} className="reply">
-        <textarea rows={3} value={body} onChange={(e) => setBody(e.target.value)} placeholder={`Reply via ${conv.channel === 'whatsapp' ? 'WhatsApp' : 'email'}…`} required />
+        <textarea rows={3} value={body} onChange={(e) => setBody(e.target.value)} placeholder={`Reply via ${CHANNEL_LABEL[conv.channel]}…`} required />
         <Feedback action={act} />
         <button className="primary" disabled={act.busy || !body.trim() || waExpired}>Send reply</button>
       </form>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api.js';
-import { Badge, ErrorNote, fmtDate, fmtRel, useLoad } from '../util.jsx';
+import { Badge, CHANNEL_LABEL, ErrorNote, fmtDate, fmtRel, useLoad } from '../util.jsx';
 
 function Tile({ label, value, sub, to }) {
   const body = (
@@ -43,10 +43,10 @@ export default function Dashboard() {
       )}
 
       <section className="tiles">
-        <Tile label="Contacts" value={data.contacts.total} sub={`${data.contacts.whatsapp} WhatsApp · ${data.contacts.email} email${data.contacts.warnings ? ` · ${data.contacts.warnings} with issues` : ''}`} to="/contacts" />
+        <Tile label="Contacts" value={data.contacts.total} sub={`${data.contacts.whatsapp} mobile${data.chatChannel === 'telegram' ? ` (${data.contacts.telegram} joined Telegram)` : ''} · ${data.contacts.email} email${data.contacts.warnings ? ` · ${data.contacts.warnings} with issues` : ''}`} to="/contacts" />
         <Tile label="Next scheduled send" value={data.nextSchedule ? fmtRel(data.nextSchedule.next_run_at) : 'None'} sub={data.nextSchedule ? `${data.nextSchedule.name} · ${fmtDate(data.nextSchedule.next_run_at)}` : 'Nothing scheduled'} to="/schedules" />
         <Tile label="Unread replies" value={data.unread} to="/inbox" />
-        <Tile label="WhatsApp (30 days)" value={t.whatsapp?.sent ?? 0} sub={`${t.whatsapp?.failed ?? 0} failed`} />
+        <Tile label={`${CHANNEL_LABEL[data.chatChannel]} (30 days)`} value={t[data.chatChannel]?.sent ?? 0} sub={`${t[data.chatChannel]?.failed ?? 0} failed`} />
         <Tile label="Email (30 days)" value={t.email?.sent ?? 0} sub={`${t.email?.failed ?? 0} failed`} />
       </section>
 

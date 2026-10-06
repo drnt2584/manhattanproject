@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { query } from '../db.js';
 import { audit } from '../services/audit.js';
-import { whatsapp } from '../providers/whatsapp.js';
+import { sendChatText } from '../services/chat.js';
 import { email } from '../providers/email.js';
 import { HttpError } from '../lib/errors.js';
 import { parse } from '../lib/validate.js';
@@ -27,7 +27,7 @@ r.get('/', async (req, res) => {
 });
 
 r.get('/thread', async (req, res) => {
-  const { channel, address } = parse(z.object({ channel: z.enum(['whatsapp', 'email']), address: z.string().min(3) }), req.query);
+  const { channel, address } = parse(z.object({ channel: z.enum(['whatsapp', 'telegram', 'email']), address: z.string().min(3) }), req.query);
   const { rows } = await query(
     `SELECT m.*, a.email AS sent_by_email FROM messages m LEFT JOIN admins a ON a.id = m.sent_by
       WHERE m.channel = $1 AND m.address = $2 ORDER BY m.created_at`, [channel, address]);
@@ -41,7 +41,7 @@ r.get('/thread', async (req, res) => {
 
 r.post('/reply', async (req, res) => {
   const b = parse(z.object({
-    channel: z.enum(['whatsapp', 'email']), address: z.string().min(3), body: z.string().trim().min(1).max(4096),
+    channel: z.enum(['whatsapp', 'telegram', 'email']), address: z.string().min(3), body: z.string().trim().min(1).max(4096),
     subject: z.string().max(300).optional(),
   }), req.body);
   const { rows: [lastIn] } = await query(
@@ -56,7 +56,9 @@ r.post('/reply', async (req, res) => {
       if (Date.now() - new Date(lastIn.created_at).getTime() > 24 * 3600_000) {
         throw new HttpError(400, 'WhatsApp only allows free-form replies within 24 hours of the contact\'s last message. Send an approved template instead.');
       }
-      providerId = (await whatsapp.send(b.address, { text: b.body })).id;
+      providerId = (await sendChatText('whatsapp', b.address, b.body)).id;
+    } else if (b.channel === 'telegram') {
+      providerId = (await sendChatText('telegram', b.address, b.body)).id;
     } else {
       const base = (lastIn.subject || 'Your message').replace(/^(re:\s*)+/i, '');
       subject = b.subject || `Re: ${base}`;

@@ -18,6 +18,10 @@ const words = z.array(z.string().trim().min(1).max(60)).max(50);
 const text = z.string().trim().min(1).max(4000);
 
 const SCHEMAS = {
+  telegram: z.object({
+    welcome: text, share_button: z.string().trim().min(1).max(60), share_prompt: text, number_received: text,
+    linked_reply: text, already_linked: text, not_own_number: text,
+  }),
   reminders: z.object({
     enabled: z.boolean(),
     time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:MM (24-hour)'),

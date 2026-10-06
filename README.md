@@ -7,11 +7,12 @@ A web dashboard that reads a contact list (CSV / Excel upload or a Google Sheets
 | Backend | Node.js 20+ (Express 5), separate worker process |
 | Database | PostgreSQL 14+ |
 | Frontend | React 19 + Vite (served by the backend in production) |
-| WhatsApp | Meta WhatsApp Business **Cloud API** (official) |
+| Chat | **Telegram** bot (now) or Meta WhatsApp Business **Cloud API**, chosen with `CHAT_CHANNEL` |
 | Email | Any SMTP server for sending; IMAP for reading replies |
 | Hosting | Mac mini (macOS) + PM2, published through a **Cloudflare Tunnel** |
 
 **Start here**
+- [docs/TELEGRAM-SETUP.md](docs/TELEGRAM-SETUP.md): run on **Telegram** while WhatsApp is being approved (`CHAT_CHANNEL=telegram`)
 - [docs/TEMPLATES-MANHATTAN-RESIDENCE.md](docs/TEMPLATES-MANHATTAN-RESIDENCE.md): the Manhattan Residence messages (bill notice, reminders, privacy notice, balance replies) and the WhatsApp templates to submit to Meta. Load them with `npm run seed -- seeds/manhattan-residence.json`.
 - [docs/WHAT-I-NEED.md](docs/WHAT-I-NEED.md): accounts and credentials to set up (WhatsApp number, email, and so on)
 - [docs/DEPLOY-MACOS.md](docs/DEPLOY-MACOS.md): install on the Mac mini and publish it with Cloudflare

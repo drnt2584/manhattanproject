@@ -2,6 +2,15 @@ import { query } from '../db.js';
 
 /** Built-in defaults; whatever the admin saves is merged over these. */
 export const DEFAULTS = {
+  telegram: {
+    welcome: 'Welcome! To receive your notices here, tap "Share my phone number" below.',
+    share_button: 'Share my phone number',
+    share_prompt: 'Please tap "Share my phone number" below first, so we can find your account.',
+    number_received: 'Thank you, we have received your number.',
+    linked_reply: 'Thank you, {{first_name}}. This chat is now linked to Unit {{unit}}. You will receive notices and reminders here. Send "balance" any time to check your account.',
+    already_linked: 'This chat is already linked. Send "balance" any time to check your account.',
+    not_own_number: 'Please share your own number using the "Share my phone number" button below.',
+  },
   reminders: {
     enabled: false,
     time: '09:00', // daily check, in APP_TIMEZONE

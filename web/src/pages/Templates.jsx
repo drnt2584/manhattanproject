@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
-import { Empty, ErrorNote, Feedback, useAction, useLoad } from '../util.jsx';
+import { CHANNEL_LABEL, Empty, ErrorNote, Feedback, useAction, useChatChannel, useLoad } from '../util.jsx';
 
 const BLANK = {
   status_key: '', label: '', wa_enabled: true, wa_body: 'Hi {{name}}, your balance is {{amount}}.', wa_template_name: '', wa_language: 'en_US',
@@ -8,6 +8,7 @@ const BLANK = {
 };
 
 function Editor({ initial, statuses, onSaved, onCancel }) {
+  const chat = useChatChannel();
   const [t, setT] = useState(() => ({ ...BLANK, ...initial, wa_template_name: initial.wa_template_name || '' }));
   const [preview, setPreview] = useState(null);
   const [contactId, setContactId] = useState('');
@@ -44,10 +45,11 @@ function Editor({ initial, statuses, onSaved, onCancel }) {
 
       <div className="grid-2 gap-top">
         <fieldset>
-          <legend><label className="inline"><input type="checkbox" checked={t.wa_enabled} onChange={set('wa_enabled')} /> WhatsApp</label></legend>
+          <legend><label className="inline"><input type="checkbox" checked={t.wa_enabled} onChange={set('wa_enabled')} /> Chat message (WhatsApp / Telegram)</label></legend>
           <label>Meta-approved template name
             <input value={t.wa_template_name} onChange={set('wa_template_name')} placeholder="payment_reminder" disabled={!t.wa_enabled} />
           </label>
+          {chat === 'telegram' && <p className="note info small">Telegram is the active chat channel: the message text below is sent as written. The Meta template fields are only used when you switch back to WhatsApp.</p>}
           <p className="muted small">WhatsApp only delivers business-started messages that use a template approved in Meta Business Manager. Leave blank only for testing.</p>
           <div className="grid-2">
             <label>Language code<input value={t.wa_language} onChange={set('wa_language')} disabled={!t.wa_enabled} /></label>
@@ -76,7 +78,7 @@ function Editor({ initial, statuses, onSaved, onCancel }) {
             <p className="muted small">Available variables: {preview.variables.map((v) => <code key={v}>{`{{${v}}}`}</code>)}</p>
             <div className="grid-2">
               <div className="bubble">
-                <div className="muted small">WhatsApp</div>
+                <div className="muted small">{CHANNEL_LABEL[chat]}</div>
                 <pre>{preview.whatsapp.text}</pre>
                 {preview.whatsapp.params && <div className="small muted">Template params: {preview.whatsapp.params.map((p, i) => `{{${i + 1}}}=${p}`).join(', ')}</div>}
                 {preview.whatsapp.missing.length > 0 && <div className="note warn small">No value for: {preview.whatsapp.missing.join(', ')}</div>}
@@ -143,7 +145,7 @@ export default function Templates() {
             </div>
             <div className="grid-2">
               <div>
-                <div className="muted small">WhatsApp {t.wa_enabled ? (t.wa_template_name ? `· template ${t.wa_template_name}` : '· free text (testing only)') : '· off'}</div>
+                <div className="muted small">Chat message {t.wa_enabled ? (t.wa_template_name ? `· template ${t.wa_template_name}` : '· free text (testing only)') : '· off'}</div>
                 {t.wa_enabled && <pre className="snippet">{t.wa_body}</pre>}
               </div>
               <div>

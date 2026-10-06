@@ -106,6 +106,7 @@ erDiagram
 | `settings` | automation settings (reminders, privacy, balance) |
 | `reminder_sends` | which reminder stage was delivered for which account and due date |
 | `consents` | Data Privacy Notice answers from people outside the contact list |
+| `telegram_links` | Telegram chat ↔ phone number, created when a resident shares their number with the bot |
 
 ### Audit log integrity
 
@@ -205,6 +206,13 @@ All `/api` routes except `/api/auth/login` require the session cookie. Every sta
 2. *Balance*: keyword match → re-sync the Google Sheet (at most once a minute) → one reply covering every row with that number or email. If a value the reply needs is missing, no automatic reply is sent and the admin answers manually.
 
 Every automatic reply is stored in the inbox (`messages.auto = true`) and audited (`auto_reply_sent`, `privacy_notice_sent`, `privacy_consent_accepted` / `privacy_consent_declined`, `balance_inquiry`).
+
+### Telegram channel (`CHAT_CHANNEL=telegram`)
+- The worker long-polls `getUpdates` (no webhook or public URL needed) and stores the offset in `settings.telegram_offset`.
+- `/start` → welcome + `request_contact` keyboard. A shared contact is accepted only if `contact.user_id == from.id`. The phone is normalized, and the row `telegram_links(chat_id, phone, …)` is upserted. Earlier messages filed under `tg:<chat_id>` move to the phone-number thread.
+- Contacts are matched on the phone number (`contacts.whatsapp` column, labelled *Mobile*). Inbox threads, consents, balance lookups and reminders therefore work the same on Telegram and WhatsApp.
+- Runs: the chat channel goes first, then email. A phone contact without a link becomes `skipped` (if it has an email) or `failed` (if not). A 403 from Telegram sets `telegram_links.blocked_at`.
+- The chat-message text of each template (`wa_body`) is sent as-is on Telegram; the Meta template name and parameters are only used on WhatsApp.
 
 ### Webhooks (public)
 | Method & path | Notes |

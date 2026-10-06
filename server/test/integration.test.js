@@ -70,7 +70,7 @@ test('upload CSV, templates, send now: WhatsApp first then email, failures conso
   assert.equal(by('Ben Reyes', 'whatsapp').state, 'failed');
   assert.equal(by('Carla Santos', 'email').state, 'failed');
   assert.match(by('Dino Lim', 'email').last_error, /No template/);
-  assert.match(by('Eve Tan', 'none').last_error, /No valid WhatsApp number or email/);
+  assert.match(by('Eve Tan', 'none').last_error, /No valid mobile number or email/);
   assert.match(by('Fe Ong', 'whatsapp').last_error, /Missing value.*amount/);
   assert.equal(done.sent, 2);
   assert.equal(done.failed, 6);

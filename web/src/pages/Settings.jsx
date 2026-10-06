@@ -27,6 +27,8 @@ export default function Settings() {
           <h2>Connections</h2>
           <p className="muted small">These are set in the server's <code>.env</code> file. Secrets are never shown here.</p>
           <dl className="facts">
+            <div><dt>Chat channel</dt><dd>{data.chatChannel === 'telegram' ? 'Telegram (WhatsApp paused)' : 'WhatsApp'}</dd></div>
+            {data.chatChannel === 'telegram' && <div><dt>Telegram bot</dt><dd>{data.telegram.mode === 'bot' ? <>{data.telegram.link ? <a href={data.telegram.link} target="_blank" rel="noreferrer">{data.telegram.link}</a> : 'connected'} · {data.telegram.linked} residents joined{data.telegram.blocked ? ` · ${data.telegram.blocked} blocked the bot` : ''}</> : 'Mock (test mode — set TELEGRAM_BOT_TOKEN)'}</dd></div>}
             <div><dt>WhatsApp</dt><dd>{data.whatsapp.provider === 'meta' ? `Meta Cloud API · number id ${data.whatsapp.phoneNumberId ?? 'missing'} · token ${data.whatsapp.tokenSet ? 'set' : 'missing'}` : 'Mock (test mode — nothing is really sent)'}</dd></div>
             <div><dt>WhatsApp webhook URL</dt><dd><code>{data.whatsapp.webhookUrl}</code> · verify token {data.whatsapp.verifyTokenSet ? 'set' : 'missing'} · app secret {data.whatsapp.appSecretSet ? 'set' : 'missing'}</dd></div>
             <div><dt>Email sending</dt><dd>{data.email.provider === 'smtp' ? `SMTP ${data.email.smtpHost} as ${data.email.from}` : 'Mock (test mode — nothing is really sent)'}</dd></div>
@@ -43,8 +45,8 @@ export default function Settings() {
         <section className="card">
           <h2>Send a test</h2>
           <form onSubmit={sendTest} className="stack">
-            <select value={t.channel} onChange={(e) => setT({ ...t, channel: e.target.value })}><option value="email">Email</option><option value="whatsapp">WhatsApp</option></select>
-            <input value={t.to} onChange={(e) => setT({ ...t, to: e.target.value })} placeholder={t.channel === 'email' ? 'you@example.com' : '012-345 6789'} required />
+            <select value={t.channel} onChange={(e) => setT({ ...t, channel: e.target.value })}><option value="email">Email</option><option value="telegram">Telegram</option><option value="whatsapp">WhatsApp</option></select>
+            <input value={t.to} onChange={(e) => setT({ ...t, to: e.target.value })} placeholder={t.channel === 'email' ? 'you@example.com' : t.channel === 'telegram' ? 'Mobile number that joined the bot, e.g. 012-345 6789' : '012-345 6789'} required />
             {t.channel === 'whatsapp' && <input value={t.template_name} onChange={(e) => setT({ ...t, template_name: e.target.value })} placeholder="Template name, e.g. hello_world (needed for first contact)" />}
             <Feedback action={test} />
             <button className="primary" disabled={test.busy}>Send test</button>

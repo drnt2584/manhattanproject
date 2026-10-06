@@ -33,7 +33,7 @@ r.get('/:id', async (req, res) => {
   const { rows: recipients } = await query(
     `SELECT id, contact_name, row_number, channel, address, status_key, state, attempts, last_error, provider_message_id, sent_at, rendered_subject, rendered_body
        FROM run_recipients WHERE run_id = $1 AND ($2::text IS NULL OR state = $2)
-      ORDER BY CASE channel WHEN 'whatsapp' THEN 0 WHEN 'email' THEN 1 ELSE 2 END, row_number LIMIT 5000`, [id, state]);
+      ORDER BY CASE channel WHEN 'email' THEN 1 WHEN 'none' THEN 2 ELSE 0 END, row_number LIMIT 5000`, [id, state]);
   const { rows: progress } = await query(
     'SELECT channel, state, count(*)::int AS n FROM run_recipients WHERE run_id = $1 GROUP BY channel, state', [id]);
   res.json({ run, recipients, progress });

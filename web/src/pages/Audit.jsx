@@ -34,7 +34,7 @@ export default function Audit() {
       <section className="card">
         <div className="filters">
           <select value={f.event} onChange={set('event')}><option value="">All events</option>{events.data?.events?.map((e) => <option key={e}>{e}</option>)}</select>
-          <select value={f.channel} onChange={set('channel')}><option value="">All channels</option><option value="whatsapp">WhatsApp</option><option value="email">Email</option></select>
+          <select value={f.channel} onChange={set('channel')}><option value="">All channels</option><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option><option value="email">Email</option></select>
           <select value={f.status} onChange={set('status')}><option value="">Any result</option><option>sent</option><option>failed</option><option>retrying</option><option>skipped</option><option>delivered</option><option>read</option><option>received</option></select>
           <input placeholder="Run #" className="narrow" value={f.run_id} onChange={(e) => { setF({ ...f, run_id: e.target.value.replace(/\D/g, '') }); setOffset(0); }} />
           <input type="search" placeholder="Name, address or error" value={f.search} onChange={set('search')} />

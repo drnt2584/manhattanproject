@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, qs } from '../api.js';
-import { Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useLoad } from '../util.jsx';
+import { Empty, ErrorNote, Feedback, fmtDate, fmtRel, useAction, useChatChannel, useLoad } from '../util.jsx';
 
 const PAGE = 100;
 
@@ -12,13 +12,14 @@ export default function Contacts() {
   const [url, setUrl] = useState('');
   const [file, setFile] = useState(null);
   const act = useAction();
+  const tg = useChatChannel() === 'telegram';
 
   const list = useLoad(() => api.get('/sources/contacts' + qs({ search, warnings: warningsOnly ? 1 : '', limit: PAGE, offset })), [search, warningsOnly, offset]);
   const statuses = useLoad(() => api.get('/sources/statuses'), []);
   const reloadAll = () => { list.reload(); statuses.reload(); };
   const source = list.data?.source;
 
-  const summaryMsg = (r) => `Loaded ${r.summary.rows} contacts (${r.summary.withWhatsapp} WhatsApp, ${r.summary.withEmail} email${r.summary.withWarnings ? `, ${r.summary.withWarnings} with issues` : ''}). This is now the active source.`;
+  const summaryMsg = (r) => `Loaded ${r.summary.rows} contacts (${r.summary.withWhatsapp} mobile, ${r.summary.withEmail} email${r.summary.withWarnings ? `, ${r.summary.withWarnings} with issues` : ''}). This is now the active source.`;
 
   const uploadFile = (e) => {
     e.preventDefault();
@@ -70,7 +71,7 @@ export default function Contacts() {
           <p className="small">The first row must be headers. Recognised names (case and spacing don't matter):</p>
           <ul className="small">
             <li><b>Name</b> — name, full name, contact name, customer name</li>
-            <li><b>WhatsApp</b> — whatsapp, whatsapp number, phone, mobile, contact number</li>
+            <li><b>Mobile</b> (WhatsApp / Telegram) — mobile, phone, whatsapp, whatsapp number, contact number</li>
             <li><b>Email</b> — email, email address, e-mail</li>
             <li><b>Status</b> — status, status type, type, category (picks the template)</li>
             <li><b>Amount</b> — amount, upcoming amount, quarterly dues, dues, amount due, value, balance, total</li>
@@ -111,11 +112,11 @@ export default function Contacts() {
         {list.data?.contacts?.length > 0 && (
           <div className="scroll">
             <table>
-              <thead><tr><th>Row</th><th>Name</th><th>WhatsApp</th><th>Email</th><th>Status</th><th className="num">Amount</th><th>Due date</th><th>Issues</th></tr></thead>
+              <thead><tr><th>Row</th><th>Name</th><th>Mobile</th>{tg && <th>Telegram</th>}<th>Email</th><th>Status</th><th className="num">Amount</th><th>Due date</th><th>Issues</th></tr></thead>
               <tbody>
                 {list.data.contacts.map((c) => (
                   <tr key={c.id} className={c.warnings.length ? 'row-warn' : ''}>
-                    <td>{c.row_number}</td><td>{c.name}</td><td>{c.whatsapp ? `+${c.whatsapp}` : '—'}</td><td>{c.email || '—'}</td>
+                    <td>{c.row_number}</td><td>{c.name}</td><td>{c.whatsapp ? `+${c.whatsapp}` : '—'}</td>{tg && <td>{c.whatsapp ? (c.telegram_linked ? 'Joined' : <span className="muted">Not yet</span>) : '—'}</td>}<td>{c.email || '—'}</td>
                     <td>{c.status}</td><td className="num">{c.amount ?? '—'}</td><td className="nowrap">{c.due_date ?? '—'}</td><td className="small">{c.warnings.join('; ')}</td>
                   </tr>
                 ))}

@@ -2,6 +2,10 @@
 
 The app runs today in **mock mode**, which sends nothing real. To go live, set up the items below and put the values in `server/.env` on the Mac mini. **Don't paste secrets (tokens, passwords) into chat or GitHub.** Type them into `.env` directly on the machine.
 
+## 0. Telegram (to start now)
+
+While WhatsApp is being set up, the app runs on a Telegram bot. All it needs is a **bot token from @BotFather**. See [TELEGRAM-SETUP.md](TELEGRAM-SETUP.md) for the 5-minute setup and the invitation text for residents.
+
 ## 1. WhatsApp: Meta WhatsApp Business Platform (Cloud API)
 
 The official API is the only reliable, ban-safe way to send bulk WhatsApp messages. "WhatsApp Web" automation tools violate WhatsApp's terms and get numbers banned.

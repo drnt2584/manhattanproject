@@ -1,4 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { api } from './api.js';
+
+export const CHANNEL_LABEL = { whatsapp: 'WhatsApp', telegram: 'Telegram', email: 'Email', none: 'No channel' };
+
+let chatPromise = null;
+/** The chat app used for phone notifications on this server ('telegram' or 'whatsapp'). */
+export function useChatChannel() {
+  const [chat, setChat] = useState('whatsapp');
+  useEffect(() => {
+    chatPromise ??= api.get('/settings/status').then((s) => s.chatChannel).catch(() => 'whatsapp');
+    chatPromise.then(setChat);
+  }, []);
+  return chat;
+}
 
 export const fmtDate = (d) => (d ? new Date(d).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—');
 export const fmtRel = (d) => {
@@ -59,7 +73,7 @@ export function Empty({ children }) {
 }
 
 export function ChannelTag({ channel }) {
-  return <span className="channel">{channel === 'whatsapp' ? 'WhatsApp' : channel === 'email' ? 'Email' : 'No channel'}</span>;
+  return <span className="channel">{CHANNEL_LABEL[channel] ?? 'No channel'}</span>;
 }
 
 /** Run an async action with busy state + error/success message. */

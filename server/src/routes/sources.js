@@ -53,7 +53,8 @@ r.get('/contacts', async (req, res) => {
   const where = `source_id = $1 AND (lower(coalesce(name,'')) LIKE $2 OR coalesce(email,'') LIKE $2 OR coalesce(whatsapp,'') LIKE $2 OR coalesce(status,'') LIKE $2)
                  ${onlyWarnings ? "AND jsonb_array_length(warnings) > 0" : ''}`;
   const [{ rows }, { rows: [{ total }] }] = await Promise.all([
-    query(`SELECT * FROM contacts WHERE ${where} ORDER BY row_number LIMIT $3 OFFSET $4`, [source.id, search, limit, offset]),
+    query(`SELECT c.*, EXISTS (SELECT 1 FROM telegram_links t WHERE t.phone = c.whatsapp AND t.blocked_at IS NULL) AS telegram_linked
+             FROM contacts c WHERE ${where} ORDER BY row_number LIMIT $3 OFFSET $4`, [source.id, search, limit, offset]),
     query(`SELECT count(*)::int AS total FROM contacts WHERE ${where}`, [source.id, search]),
   ]);
   res.json({ source, contacts: rows, total });

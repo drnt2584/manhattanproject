@@ -51,6 +51,15 @@ export const config = {
     graphBaseUrl: env.WHATSAPP_GRAPH_URL || 'https://graph.facebook.com',
   },
 
+  // Which chat app carries the phone notifications: 'telegram' or 'whatsapp'
+  chatChannel: env.CHAT_CHANNEL === 'telegram' ? 'telegram' : 'whatsapp',
+
+  telegram: {
+    botToken: env.TELEGRAM_BOT_TOKEN || '', // empty = mock mode
+    apiBase: env.TELEGRAM_API_URL || 'https://api.telegram.org',
+    concurrency: int(env.TELEGRAM_CONCURRENCY, 5), // Telegram allows ~30 msg/s overall
+  },
+
   email: {
     provider: env.EMAIL_PROVIDER || 'mock', // 'smtp' | 'mock'
     from: env.EMAIL_FROM || 'Notifications <no-reply@example.com>',

@@ -14,6 +14,7 @@ r.get('/', async (_req, res) => {
     query(`SELECT channel, count(*) FILTER (WHERE state = 'sent')::int AS sent, count(*) FILTER (WHERE state = 'failed')::int AS failed
              FROM run_recipients rr JOIN runs r ON r.id = rr.run_id WHERE r.created_at > now() - interval '30 days' GROUP BY channel`).then((x) => x.rows),
     query(`SELECT count(*)::int AS total, count(whatsapp)::int AS whatsapp, count(email)::int AS email,
+                  count(*) FILTER (WHERE EXISTS (SELECT 1 FROM telegram_links t WHERE t.phone = c.whatsapp AND t.blocked_at IS NULL))::int AS telegram,
                   count(*) FILTER (WHERE jsonb_array_length(warnings) > 0)::int AS warnings
              FROM contacts c JOIN data_sources s ON s.id = c.source_id AND s.is_active`).then((x) => x.rows[0]),
     query(`SELECT DISTINCT c.status FROM contacts c JOIN data_sources s ON s.id = c.source_id AND s.is_active
@@ -24,7 +25,7 @@ r.get('/', async (_req, res) => {
                   count(*) FILTER (WHERE a.event = 'reply_received')::int AS replies
              FROM audit_log a WHERE a.ts > now() - interval '14 days' GROUP BY 1 ORDER BY 1`, [config.timezone]).then((x) => x.rows),
   ]);
-  res.json({ source, nextSchedule, runs, unread, totals, contacts, missingTemplates, daily, timezone: config.timezone });
+  res.json({ chatChannel: config.chatChannel, source, nextSchedule, runs, unread, totals, contacts, missingTemplates, daily, timezone: config.timezone });
 });
 
 export default r;

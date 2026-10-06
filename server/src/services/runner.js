@@ -4,13 +4,16 @@ import { logger } from '../logger.js';
 import { audit } from './audit.js';
 import { syncSource } from './sources.js';
 import { whatsapp } from '../providers/whatsapp.js';
+import { telegram } from '../providers/telegram.js';
+import { telegramLinks } from './chat.js';
 import { email } from '../providers/email.js';
 import { contactVariables, render } from '../lib/template.js';
 import { mapPool, sleep } from '../lib/concurrency.js';
 import { HttpError, SendError } from '../lib/errors.js';
 import { reminderPlan, recordReminderSends, contactKey } from './reminders.js';
 
-const CHANNEL_ORDER = ['whatsapp', 'email']; // WhatsApp list first, then email list
+// Chat list first (WhatsApp, or Telegram while WhatsApp is being set up), then the email list
+const channelOrder = () => [config.chatChannel, 'email'];
 
 /** Queue a run. Rejects if another run is already queued or in progress. */
 export async function requestRun({ trigger, kind = 'broadcast', scheduleId = null, admin = null }, client = null) {
@@ -55,14 +58,28 @@ async function buildRecipients(run) {
     }));
   }
   const out = [];
+  const chat = config.chatChannel;
+  const links = chat === 'telegram' ? await telegramLinks() : null;
 
   for (const { contact: c, key, tpl, extra, missing: missingTemplate } of items) {
     const base = { contact_id: c.id, row_number: c.row_number, contact_name: c.name, status_key: key, ...extra };
     const channels = [];
-    if (c.whatsapp) channels.push(['whatsapp', c.whatsapp]);
+    if (c.whatsapp) {
+      if (chat === 'telegram' && !links.has(c.whatsapp)) {
+        // A Telegram bot can only message people who opened it and shared their number.
+        // That only matters if this template actually sends a chat message.
+        const r = { ...base, channel: 'telegram', address: c.whatsapp, template_id: tpl?.id ?? null };
+        if (!tpl) out.push({ ...r, state: 'failed', last_error: missingTemplate });
+        else if (!tpl.wa_enabled) out.push({ ...r, state: 'skipped', last_error: 'Chat message disabled for this template' });
+        else if (c.email) out.push({ ...r, state: 'skipped', last_error: 'Has not joined the Telegram bot yet (email only)' });
+        else out.push({ ...r, state: 'failed', last_error: 'Not reachable: has not joined the Telegram bot and has no email' });
+      } else {
+        channels.push([chat, c.whatsapp]);
+      }
+    }
     if (c.email) channels.push(['email', c.email]);
     if (!channels.length) {
-      out.push({ ...base, channel: 'none', address: null, state: 'failed', last_error: `No valid WhatsApp number or email (${c.warnings.join('; ') || 'empty'})` });
+      if (!c.whatsapp) out.push({ ...base, channel: 'none', address: null, state: 'failed', last_error: `No valid mobile number or email (${c.warnings.join('; ') || 'empty'})` });
       continue;
     }
     const vars = contactVariables(c);
@@ -72,7 +89,12 @@ async function buildRecipients(run) {
         out.push({ ...r, state: 'failed', last_error: missingTemplate });
         continue;
       }
-      if (channel === 'whatsapp') {
+      if (channel === 'telegram') {
+        if (!tpl.wa_enabled) { out.push({ ...r, state: 'skipped', last_error: 'Chat message disabled for this template' }); continue; }
+        const body = render(tpl.wa_body, vars);
+        if (body.missing.length) { out.push({ ...r, state: 'failed', last_error: `Missing value(s) in sheet for: ${body.missing.join(', ')}` }); continue; }
+        out.push({ ...r, state: 'pending', rendered_body: body.text, wa_payload: { chat_id: String(links.get(address)), text: body.text } });
+      } else if (channel === 'whatsapp') {
         if (!tpl.wa_enabled) { out.push({ ...r, state: 'skipped', last_error: 'WhatsApp disabled for this status template' }); continue; }
         const body = render(tpl.wa_body, vars);
         const missing = new Set(body.missing);
@@ -146,9 +168,9 @@ async function deliver(run, r) {
   const { maxAttempts, retryBaseMs } = config.worker;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const res = r.channel === 'whatsapp'
-        ? await whatsapp.send(r.address, r.wa_payload)
-        : await email.send({ to: r.address, subject: r.rendered_subject, text: r.rendered_body });
+      const res = r.channel === 'whatsapp' ? await whatsapp.send(r.address, r.wa_payload)
+        : r.channel === 'telegram' ? await telegram.send(r.wa_payload.chat_id, r.wa_payload.text)
+          : await email.send({ to: r.address, subject: r.rendered_subject, text: r.rendered_body });
       await query(
         "UPDATE run_recipients SET state = 'sent', attempts = $2, provider_message_id = $3, sent_at = now(), last_error = NULL WHERE id = $1",
         [r.id, attempt, res.id],
@@ -169,6 +191,9 @@ async function deliver(run, r) {
       });
       if (final) {
         await query("UPDATE run_recipients SET state = 'failed', attempts = $2, last_error = $3 WHERE id = $1", [r.id, attempt, err.message]);
+        if (r.channel === 'telegram' && err.code === 403) {
+          await query('UPDATE telegram_links SET blocked_at = now() WHERE chat_id = $1', [r.wa_payload.chat_id]);
+        }
         if (!(err instanceof SendError)) logger.error({ err, recipient: r.id }, 'unexpected send error');
         return;
       }
@@ -262,12 +287,12 @@ export async function executeRun(run) {
     }
 
     const isCancelled = cancelChecker(run.id);
-    for (const channel of CHANNEL_ORDER) {
+    for (const channel of channelOrder()) {
       const { rows: pending } = await query(
         "SELECT * FROM run_recipients WHERE run_id = $1 AND channel = $2 AND state = 'pending' ORDER BY row_number, id", [run.id, channel]);
       if (!pending.length) continue;
       log.info({ channel, count: pending.length }, 'sending');
-      const limit = channel === 'whatsapp' ? config.whatsapp.concurrency : config.email.concurrency;
+      const limit = channel === 'email' ? config.email.concurrency : config[channel].concurrency;
       await mapPool(pending, limit, (r) => deliver(run, r), isCancelled);
       await audit({ event: 'channel_completed', run_id: run.id, channel, details: { attempted: pending.length } });
     }

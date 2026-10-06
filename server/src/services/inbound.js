@@ -11,7 +11,7 @@ async function lastOutbound(channel, address) {
 }
 
 async function contactName(channel, address) {
-  const col = channel === 'whatsapp' ? 'whatsapp' : 'email';
+  const col = channel === 'email' ? 'email' : 'whatsapp'; // WhatsApp and Telegram are keyed by phone number
   const { rows } = await query(
     `SELECT c.name FROM contacts c JOIN data_sources s ON s.id = c.source_id
       WHERE c.${col} = $1 ORDER BY s.is_active DESC, c.id DESC LIMIT 1`, [address]);

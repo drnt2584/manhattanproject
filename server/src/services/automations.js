@@ -3,7 +3,7 @@ import { logger } from '../logger.js';
 import { audit } from './audit.js';
 import { getSetting } from './settings.js';
 import { activeSource, syncSource } from './sources.js';
-import { whatsapp } from '../providers/whatsapp.js';
+import { sendChatText } from './chat.js';
 import { email } from '../providers/email.js';
 import { contactVariables, render } from '../lib/template.js';
 
@@ -42,7 +42,7 @@ export function isBalanceQuestion(body, keywords) {
 }
 
 async function findContacts(channel, address) {
-  const col = channel === 'whatsapp' ? 'whatsapp' : 'email';
+  const col = channel === 'email' ? 'email' : 'whatsapp'; // chat channels are keyed by phone number
   const { rows } = await query(
     `SELECT c.* FROM contacts c JOIN data_sources s ON s.id = c.source_id AND s.is_active
       WHERE c.${col} = $1 ORDER BY c.row_number`, [address]);
@@ -54,8 +54,8 @@ async function autoReply(msg, kind, text, contactName = null) {
   let providerId;
   let subject = null;
   try {
-    if (msg.channel === 'whatsapp') {
-      providerId = (await whatsapp.send(msg.address, { text })).id;
+    if (msg.channel !== 'email') {
+      providerId = (await sendChatText(msg.channel, msg.address, text)).id;
     } else {
       subject = `Re: ${(msg.subject || 'Your message').replace(/^(re:\s*)+/i, '')}`;
       providerId = (await email.send({ to: msg.address, subject, text, inReplyTo: msg.provider_message_id, references: msg.provider_message_id })).id;
@@ -68,7 +68,7 @@ async function autoReply(msg, kind, text, contactName = null) {
   await query(
     `INSERT INTO messages (channel, direction, address, contact_name, subject, body, provider_message_id, in_reply_to, is_read, auto)
      VALUES ($1,'outbound',$2,$3,$4,$5,$6,$7,TRUE,TRUE)`,
-    [msg.channel, msg.address, contactName ?? msg.contact_name, subject, text, providerId, msg.provider_message_id]);
+    [msg.channel, msg.address, contactName ?? msg.contact_name, subject, text, providerId, msg.provider_message_id ?? null]);
   await audit({
     event: 'auto_reply_sent', actor: 'automation', channel: msg.channel, direction: 'outbound', contact_name: contactName ?? msg.contact_name,
     address: msg.address, status: 'sent', provider_message_id: providerId, details: { kind, subject, body: text },
@@ -145,7 +145,7 @@ export async function runAutomations(messages) {
   for (const msg of messages.filter(Boolean)) {
     try {
       const known = (await findContacts(msg.channel, msg.address)).length > 0;
-      if (msg.channel === 'whatsapp') {
+      if (msg.channel !== 'email') {
         const privacy = await getSetting('privacy');
         if (privacy.enabled && (await handlePrivacy(msg, privacy, known))) continue;
       }
