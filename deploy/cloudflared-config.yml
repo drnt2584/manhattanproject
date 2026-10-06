@@ -1,0 +1,12 @@
+# ~/.cloudflared/config.yml
+# Created with: cloudflared tunnel create notify
+tunnel: notify
+credentials-file: /Users/YOUR_USER/.cloudflared/TUNNEL_ID.json
+
+ingress:
+  - hostname: notify.example.com
+    service: http://127.0.0.1:4000
+    originRequest:
+      connectTimeout: 10s
+      keepAliveTimeout: 60s
+  - service: http_status:404

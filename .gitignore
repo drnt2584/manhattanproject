@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+dist/
+service-account*.json
+# generated on the deploy machine (the sandbox could not reach cdn.sheetjs.com)
+server/package-lock.json

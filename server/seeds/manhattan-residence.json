@@ -1,0 +1,183 @@
+{
+  "templates": [
+    {
+      "status_key": "unpaid",
+      "label": "1. Quarterly maintenance charges & sinking fund notice",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_maintenance_charges_notice",
+      "wa_language": "en",
+      "wa_params": [
+        "name",
+        "unit",
+        "billing_period",
+        "amount_formatted",
+        "previous_unpaid_formatted",
+        "total_due_formatted",
+        "due_date_formatted"
+      ],
+      "wa_body": "Good day, {{name}}!\n\nThis is a billing notice from the Joint Management Body (JMB) of The Manhattan Residence for the maintenance charges and sinking fund of Unit {{unit}} for {{billing_period}}.\n\nMaintenance charges & sinking fund: {{amount_formatted}}\nArrears: {{previous_unpaid_formatted}}\nTotal amount due: {{total_due_formatted}}\nDue date: {{due_date_formatted}}\n\nKindly settle on or before the due date.\n\nPayment by bank transfer:\nBank: Public Bank\nAccount name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\nAccount no.: 3214-1858-04\nPlease use your unit number as the payment reference.\n\nAfter paying, please reply with your proof of payment. For questions, simply reply to this message. Thank you.",
+      "email_enabled": true,
+      "email_subject": "Maintenance Charges & Sinking Fund – Unit {{unit}} – {{billing_period}}",
+      "email_body": "Dear {{name}},\n\nGood day! This is a billing notice from the Joint Management Body (JMB) of The Manhattan Residence for the maintenance charges and sinking fund of Unit {{unit}} for {{billing_period}}.\n\n    Maintenance charges & sinking fund:  {{amount_formatted}}\n    Arrears:                             {{previous_unpaid_formatted}}\n    TOTAL AMOUNT DUE:                    {{total_due_formatted}}\n    Due date:                            {{due_date_formatted}}\n\nKindly settle on or before the due date.\n\n    Payment by bank transfer\n    Bank:          Public Bank\n    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\n    Account no.:   3214-1858-04\n    Reference:     your unit number (Unit {{unit}})\n\nAfter paying, please reply to this email with your proof of payment. For any questions about your statement, simply reply to this email or visit the Management Office.\n\nIf you have already paid, please disregard this notice.\n\nThank you,\nThe Joint Management Body (JMB)\nThe Manhattan Residence"
+    },
+    {
+      "status_key": "paid",
+      "label": "Paid accounts – no notice (recorded as skipped)",
+      "wa_enabled": false,
+      "wa_body": "",
+      "wa_params": [],
+      "email_enabled": false,
+      "email_subject": "",
+      "email_body": ""
+    },
+    {
+      "status_key": "reminder_5",
+      "label": "2a. First reminder – due date + 5 days",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_maintenance_reminder_first",
+      "wa_language": "en",
+      "wa_params": [
+        "name",
+        "unit",
+        "due_date_formatted",
+        "days_overdue",
+        "total_due_formatted"
+      ],
+      "wa_body": "Hello {{name}}, this is a friendly reminder from the Joint Management Body (JMB) of The Manhattan Residence.\n\nOur records show that the maintenance charges and sinking fund for Unit {{unit}} are still outstanding. The due date was {{due_date_formatted}}, so the account is now {{days_overdue}} days overdue.\n\nTotal amount due: {{total_due_formatted}}\n\nPayment by bank transfer:\nBank: Public Bank\nAccount name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\nAccount no.: 3214-1858-04\nPlease use your unit number as the payment reference.\n\nPlease settle at your earliest convenience. If you have already paid, kindly reply with your proof of payment so we can update your account. Thank you.",
+      "email_enabled": true,
+      "email_subject": "Payment Reminder – Unit {{unit}} maintenance charges & sinking fund {{days_overdue}} days overdue",
+      "email_body": "Dear {{name}},\n\nThis is a friendly reminder from the Joint Management Body (JMB) of The Manhattan Residence.\n\nOur records show that the maintenance charges and sinking fund for Unit {{unit}} are still outstanding. The due date was {{due_date_formatted}}, so the account is now {{days_overdue}} days overdue.\n\n    TOTAL AMOUNT DUE:  {{total_due_formatted}}\n\n    Payment by bank transfer\n    Bank:          Public Bank\n    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\n    Account no.:   3214-1858-04\n    Reference:     your unit number (Unit {{unit}})\n\nPlease settle at your earliest convenience. If you have already paid, kindly reply to this email with your proof of payment so we can update your account.\n\nThank you,\nThe Joint Management Body (JMB)\nThe Manhattan Residence"
+    },
+    {
+      "status_key": "reminder_14",
+      "label": "2b. Second reminder – due date + 14 days",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_maintenance_reminder_second",
+      "wa_language": "en",
+      "wa_params": [
+        "name",
+        "unit",
+        "days_overdue",
+        "due_date_formatted",
+        "total_due_formatted"
+      ],
+      "wa_body": "Hello {{name}}, this is a second reminder from the Joint Management Body (JMB) of The Manhattan Residence.\n\nThe maintenance charges and sinking fund for Unit {{unit}} remain outstanding and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\nTotal amount due: {{total_due_formatted}}\n\nPayment by bank transfer:\nBank: Public Bank\nAccount name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\nAccount no.: 3214-1858-04\nPlease use your unit number as the payment reference.\n\nWe kindly ask that you settle this amount as soon as possible to keep your account in good standing. If payment has already been made, please reply with your proof of payment. Thank you.",
+      "email_enabled": true,
+      "email_subject": "Second Reminder – Unit {{unit}} maintenance charges & sinking fund {{days_overdue}} days overdue",
+      "email_body": "Dear {{name}},\n\nThis is a second reminder from the Joint Management Body (JMB) of The Manhattan Residence.\n\nThe maintenance charges and sinking fund for Unit {{unit}} remain outstanding and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\n    TOTAL AMOUNT DUE:  {{total_due_formatted}}\n\n    Payment by bank transfer\n    Bank:          Public Bank\n    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\n    Account no.:   3214-1858-04\n    Reference:     your unit number (Unit {{unit}})\n\nWe kindly ask that you settle this amount as soon as possible to keep your account in good standing. If payment has already been made, please reply to this email with your proof of payment.\n\nThank you,\nThe Joint Management Body (JMB)\nThe Manhattan Residence"
+    },
+    {
+      "status_key": "final_30",
+      "label": "2c. Final notice – due date + 30 days",
+      "wa_enabled": true,
+      "wa_template_name": "tmr_maintenance_final_notice",
+      "wa_language": "en",
+      "wa_params": [
+        "name",
+        "unit",
+        "days_overdue",
+        "due_date_formatted",
+        "total_due_formatted"
+      ],
+      "wa_body": "FINAL NOTICE: Hello {{name}}, the maintenance charges and sinking fund for Unit {{unit}} at The Manhattan Residence remain outstanding and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\nTotal amount due: {{total_due_formatted}}\n\nPayment by bank transfer:\nBank: Public Bank\nAccount name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\nAccount no.: 3214-1858-04\nPlease use your unit number as the payment reference.\n\nPlease settle the full amount immediately, or contact the Management Office to discuss your account. Outstanding charges may be subject to late payment interest and further recovery action under the Strata Management Act 2013 (Act 757) and the building's by-laws. If you have already paid, please reply with your proof of payment. Thank you.",
+      "email_enabled": true,
+      "email_subject": "FINAL NOTICE – Unit {{unit}} maintenance charges & sinking fund {{days_overdue}} days overdue",
+      "email_body": "Dear {{name}},\n\nFINAL NOTICE\n\nThe maintenance charges and sinking fund for Unit {{unit}} at The Manhattan Residence remain outstanding and are now {{days_overdue}} days past the {{due_date_formatted}} due date.\n\n    TOTAL AMOUNT DUE:  {{total_due_formatted}}\n\n    Payment by bank transfer\n    Bank:          Public Bank\n    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\n    Account no.:   3214-1858-04\n    Reference:     your unit number (Unit {{unit}})\n\nPlease settle the full amount immediately, or contact the Management Office to discuss your account. Outstanding charges may be subject to late payment interest and further recovery action under the Strata Management Act 2013 (Act 757) and the building's by-laws.\n\nIf you have already paid, please reply to this email with your proof of payment so we can update our records.\n\nThe Joint Management Body (JMB)\nThe Manhattan Residence"
+    }
+  ],
+  "settings": {
+    "telegram": {
+      "welcome": "Welcome to the notification service of the Joint Management Body (JMB) of The Manhattan Residence.\nTo receive your maintenance charge notices and reminders here, tap \"Share my phone number\" below.\n\nSelamat datang ke perkhidmatan notifikasi Badan Pengurusan Bersama (JMB) The Manhattan Residence.\nUntuk menerima notis dan peringatan caj penyelenggaraan di sini, tekan butang \"Share my phone number\" di bawah.",
+      "share_button": "Share my phone number",
+      "share_prompt": "Please tap \"Share my phone number\" below first, so we can find your unit account.\n\nSila tekan butang \"Share my phone number\" di bawah dahulu supaya kami dapat mencari akaun unit anda.",
+      "number_received": "Thank you, we have received your number. / Terima kasih, nombor anda telah diterima.",
+      "linked_reply": "Thank you, {{first_name}}. This chat is now linked to Unit {{unit}}. You will receive maintenance charge notices and reminders here. Send \"balance\" at any time to check your account.\n\nTerima kasih, {{first_name}}. Perbualan ini kini dipautkan kepada Unit {{unit}}. Anda akan menerima notis dan peringatan caj penyelenggaraan di sini. Hantar \"baki\" pada bila-bila masa untuk menyemak akaun anda.",
+      "already_linked": "This chat is already linked to your unit. Send \"balance\" at any time to check your account.\n\nPerbualan ini sudah dipautkan kepada unit anda. Hantar \"baki\" pada bila-bila masa untuk menyemak akaun anda.",
+      "not_own_number": "Please share your own number using the \"Share my phone number\" button below.\n\nSila kongsi nombor anda sendiri menggunakan butang \"Share my phone number\" di bawah."
+    },
+    "reminders": {
+      "enabled": false,
+      "time": "09:00",
+      "unpaid_statuses": [
+        "unpaid"
+      ],
+      "rules": [
+        {
+          "days": 5,
+          "template": "reminder_5"
+        },
+        {
+          "days": 14,
+          "template": "reminder_14"
+        },
+        {
+          "days": 30,
+          "template": "final_30"
+        }
+      ]
+    },
+    "privacy": {
+      "enabled": false,
+      "notice": "Thank you for messaging The Manhattan Residence Management Office. / Terima kasih kerana menghubungi Pejabat Pengurusan The Manhattan Residence.\n\nPERSONAL DATA PROTECTION NOTICE\nThe Joint Management Body (JMB) of The Manhattan Residence (\"we\") processes personal data in accordance with the Personal Data Protection Act 2010 (Act 709), as amended by the Personal Data Protection (Amendment) Act 2024 (Act A1727).\n1. Data: your name, mobile number, messaging app profile name and the messages you send us, provided by you through this chat.\n2. Purpose: to respond to your enquiry, to verify whether you are a resident or unit owner, and to communicate with you about building matters.\n3. Disclosure: only authorised management staff, and the providers of the messaging services we use (Telegram, WhatsApp/Meta and our email provider), which may store data outside Malaysia. We do not sell your data or disclose it to other third parties unless required by law.\n4. Your rights: you may request access to or correction of your personal data, request data portability where applicable, withdraw your consent, or make an enquiry or complaint by contacting our Data Protection Officer, Nicco Tan, at +60 11-1433 0484.\n5. Providing your data is voluntary. If you do not agree, we will not be able to assist you through this channel.\n\nNOTIS PERLINDUNGAN DATA PERIBADI\nBadan Pengurusan Bersama (JMB) The Manhattan Residence (\"kami\") memproses data peribadi menurut Akta Perlindungan Data Peribadi 2010 (Akta 709), sebagaimana dipinda oleh Akta Perlindungan Data Peribadi (Pindaan) 2024 (Akta A1727).\n1. Data: nama, nombor telefon bimbit, nama profil aplikasi pesanan dan mesej yang anda hantar kepada kami, yang diberikan oleh anda melalui perbualan ini.\n2. Tujuan: untuk menjawab pertanyaan anda, mengesahkan sama ada anda penghuni atau pemilik unit, dan berhubung dengan anda mengenai hal-hal bangunan.\n3. Pendedahan: hanya kakitangan pengurusan yang diberi kuasa, dan pembekal perkhidmatan pesanan yang kami gunakan (Telegram, WhatsApp/Meta dan pembekal e-mel kami), yang mungkin menyimpan data di luar Malaysia. Kami tidak menjual data anda atau mendedahkannya kepada pihak ketiga lain kecuali jika dikehendaki oleh undang-undang.\n4. Hak anda: anda boleh meminta akses kepada atau pembetulan data peribadi anda, meminta kemudahalihan data jika berkenaan, menarik balik persetujuan anda, atau membuat pertanyaan atau aduan dengan menghubungi Pegawai Perlindungan Data kami, Nicco Tan, di talian +60 11-1433 0484.\n5. Pemberian data anda adalah secara sukarela. Jika anda tidak bersetuju, kami tidak dapat membantu anda melalui saluran ini.\n\nDo you agree? Please reply YES or NO.\nAdakah anda bersetuju? Sila balas YA atau TIDAK.",
+      "accepted_reply": "Thank you, your consent has been recorded. How may we help you? If you are a resident or unit owner, please send your full name and unit number.\n\nTerima kasih, persetujuan anda telah direkodkan. Bagaimana kami boleh membantu? Jika anda penghuni atau pemilik unit, sila hantar nama penuh dan nombor unit anda.",
+      "declined_reply": "Thank you. We have recorded that you do not consent, and we will not process your personal data further. For any matter, please visit the Management Office.\n\nTerima kasih. Kami telah merekodkan bahawa anda tidak bersetuju, dan kami tidak akan memproses data peribadi anda selanjutnya. Untuk sebarang urusan, sila hubungi Pejabat Pengurusan secara bersemuka.",
+      "invalid_reply": "Sorry, we did not understand. Please reply YES if you agree to the notice above, or NO if you do not.\n\nMaaf, kami tidak faham. Sila balas YA jika anda bersetuju dengan notis di atas, atau TIDAK jika anda tidak bersetuju.",
+      "yes_words": [
+        "yes",
+        "y",
+        "agree",
+        "i agree",
+        "accept",
+        "ya",
+        "ye",
+        "setuju",
+        "saya setuju",
+        "ok"
+      ],
+      "no_words": [
+        "no",
+        "n",
+        "disagree",
+        "decline",
+        "i do not agree",
+        "i don't agree",
+        "tidak",
+        "tak",
+        "tidak setuju",
+        "tak setuju",
+        "saya tidak setuju"
+      ]
+    },
+    "balance": {
+      "enabled": false,
+      "keywords": [
+        "balance",
+        "bill",
+        "billing",
+        "dues",
+        "how much",
+        "outstanding",
+        "statement",
+        "soa",
+        "unpaid",
+        "owe",
+        "baki",
+        "bil",
+        "yuran",
+        "caj",
+        "tunggakan",
+        "berapa",
+        "hutang",
+        "penyata",
+        "maintenance",
+        "sinking fund",
+        "service charge",
+        "arrears",
+        "penyelenggaraan"
+      ],
+      "reply": "Hello {{first_name}}, here is the latest statement for Unit {{unit}} of The Manhattan Residence:\n\nMaintenance charges & sinking fund ({{billing_period}}): {{amount_formatted}}\nArrears: {{previous_unpaid_formatted}}\nTotal amount due: {{total_due_formatted}}\nDue date: {{due_date_formatted}} ({{due_status}})\n\nPlease settle your balance as soon as possible by bank transfer:\nBank: Public Bank\nAccount name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\nAccount no.: 3214-1858-04\nReference: Unit {{unit}}\n\nIf you have already paid, kindly send us your proof of payment so we can update your account. Thank you!",
+      "paid_reply": "Hello {{first_name}}, Unit {{unit}} has no outstanding maintenance charges or sinking fund as of today. Thank you for your prompt payment!",
+      "not_found_reply": "We could not find a unit account linked to this number. Please send your full name and unit number, and the Management Office will assist you."
+    }
+  }
+}

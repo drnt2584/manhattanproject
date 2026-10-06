@@ -1,0 +1,44 @@
+{
+  "name": "notify-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "worker": "node src/worker.js",
+    "dev": "node --watch src/index.js",
+    "dev:worker": "node --watch src/worker.js",
+    "migrate": "node src/migrate.js",
+    "test": "node --test --test-concurrency=1 \"test/*.test.js\"",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cron-parser": "^5.10.1",
+    "csv-parse": "^7.0.3",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.1",
+    "google-auth-library": "^11.1.0",
+    "helmet": "^8.3.0",
+    "imapflow": "^2.2.5",
+    "jsonwebtoken": "^9.0.3",
+    "mailparser": "^3.9.36",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.0.15",
+    "pg": "^8.23.1",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
+    "zod": "^3.25.76"
+  },
+  "optionalDependencies": {
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}
