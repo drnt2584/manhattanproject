@@ -37,6 +37,19 @@ AMOUNT_LOCALE=en-MY
 DATE_FORMAT=DMY
 ```
 
+## Payment details used in every message
+
+The bill notice, all three reminders (WhatsApp and email) and the balance reply include:
+
+```
+Bank: Public Bank
+Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+Account no.: 3214-1858-04
+Reference: unit number
+```
+
+The account details are fixed text inside the WhatsApp templates, so **if the bank account ever changes, the four templates must be edited and re-approved by Meta.** The balance reply and the emails can be edited in the dashboard at any time.
+
 ## 2. How each use case works
 
 | # | Use case | Trigger | Who gets it |
@@ -73,7 +86,15 @@ Previous unpaid balance: {{5}}
 Total amount due: {{6}}
 Due date: {{7}}
 
-Kindly settle on or before the due date. For payment options or questions, simply reply to this message. Thank you.
+Kindly settle on or before the due date.
+
+Payment by bank transfer:
+Bank: Public Bank
+Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+Account no.: 3214-1858-04
+Please use your unit number as the payment reference.
+
+After paying, please reply with your proof of payment. For questions, simply reply to this message. Thank you.
 ```
 
 **Variable samples** (Meta asks for one example per variable):
@@ -100,7 +121,15 @@ Good day! This is a billing notice from The Manhattan Residence Management Offic
     TOTAL AMOUNT DUE:          {{total_due_formatted}}
     Due date:                  {{due_date_formatted}}
 
-Kindly settle your dues on or before the due date. For payment options or any questions about your statement, simply reply to this email or visit the Management Office.
+Kindly settle your dues on or before the due date.
+
+    Payment by bank transfer
+    Bank:          Public Bank
+    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+    Account no.:   3214-1858-04
+    Reference:     your unit number (Unit {{unit}})
+
+After paying, please reply to this email with your proof of payment. For any questions about your statement, simply reply to this email or visit the Management Office.
 
 If you have already paid, please disregard this notice.
 
@@ -126,6 +155,12 @@ Our records show that the association dues for Unit {{2}} are still unpaid. The 
 
 Total amount due: {{5}}
 
+Payment by bank transfer:
+Bank: Public Bank
+Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+Account no.: 3214-1858-04
+Please use your unit number as the payment reference.
+
 Please settle at your earliest convenience. If you have already paid, kindly reply with your proof of payment so we can update your account. Thank you.
 ```
 
@@ -149,6 +184,12 @@ This is a friendly reminder from The Manhattan Residence Management Office.
 Our records show that the association dues for Unit {{unit}} are still unpaid. The due date was {{due_date_formatted}}, so the account is now {{days_overdue}} days past due.
 
     TOTAL AMOUNT DUE:  {{total_due_formatted}}
+
+    Payment by bank transfer
+    Bank:          Public Bank
+    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+    Account no.:   3214-1858-04
+    Reference:     your unit number (Unit {{unit}})
 
 Please settle at your earliest convenience. If you have already paid, kindly reply to this email with your proof of payment so we can update your account.
 
@@ -174,6 +215,12 @@ The association dues for Unit {{2}} remain unpaid and are now {{3}} days past th
 
 Total amount due: {{5}}
 
+Payment by bank transfer:
+Bank: Public Bank
+Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+Account no.: 3214-1858-04
+Please use your unit number as the payment reference.
+
 We kindly ask that you settle this balance as soon as possible to keep your account in good standing. If payment has already been made, please reply with your proof of payment. Thank you.
 ```
 
@@ -198,6 +245,12 @@ The association dues for Unit {{unit}} remain unpaid and are now {{days_overdue}
 
     TOTAL AMOUNT DUE:  {{total_due_formatted}}
 
+    Payment by bank transfer
+    Bank:          Public Bank
+    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+    Account no.:   3214-1858-04
+    Reference:     your unit number (Unit {{unit}})
+
 We kindly ask that you settle this balance as soon as possible to keep your account in good standing. If payment has already been made, please reply to this email with your proof of payment.
 
 Thank you,
@@ -219,6 +272,12 @@ The Manhattan Residence Management Office
 FINAL NOTICE: Hello {{1}}, the association dues for Unit {{2}} at The Manhattan Residence remain unpaid and are now {{3}} days past the {{4}} due date.
 
 Total amount due: {{5}}
+
+Payment by bank transfer:
+Bank: Public Bank
+Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+Account no.: 3214-1858-04
+Please use your unit number as the payment reference.
 
 Please settle the full amount immediately, or contact the Management Office to discuss your account. Unpaid accounts may be subject to the penalties and measures set out in the Association's by-laws. If you have already paid, please reply with your proof of payment. Thank you.
 ```
@@ -243,6 +302,12 @@ FINAL NOTICE
 The association dues for Unit {{unit}} at The Manhattan Residence remain unpaid and are now {{days_overdue}} days past the {{due_date_formatted}} due date.
 
     TOTAL AMOUNT DUE:  {{total_due_formatted}}
+
+    Payment by bank transfer
+    Bank:          Public Bank
+    Account name:  BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+    Account no.:   3214-1858-04
+    Reference:     your unit number (Unit {{unit}})
 
 Please settle the full amount immediately, or contact the Management Office to discuss your account. Unpaid accounts may be subject to the penalties and measures set out in the Association's by-laws.
 
@@ -319,7 +384,13 @@ Previous unpaid balance: {{previous_unpaid_formatted}}
 Total amount due: {{total_due_formatted}}
 Due date: {{due_date_formatted}} ({{due_status}})
 
-Please settle your balance as soon as possible. If you have already paid, kindly send us your proof of payment so we can update your account. Thank you!
+Please settle your balance as soon as possible by bank transfer:
+Bank: Public Bank
+Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+Account no.: 3214-1858-04
+Reference: Unit {{unit}}
+
+If you have already paid, kindly send us your proof of payment so we can update your account. Thank you!
 ```
 **Paid account:**
 ```
@@ -339,7 +410,13 @@ Previous unpaid balance: RM 980.00
 Total amount due: RM 1,960.00
 Due date: 30 September 2026 (overdue by 6 days)
 
-Please settle your balance as soon as possible. If you have already paid, kindly send us your proof of payment so we can update your account. Thank you!
+Please settle your balance as soon as possible by bank transfer:
+Bank: Public Bank
+Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
+Account no.: 3214-1858-04
+Reference: Unit B-08-01
+
+If you have already paid, kindly send us your proof of payment so we can update your account. Thank you!
 ```
 
 ## 6. Load into the app and switch on
@@ -361,7 +438,6 @@ Then in the dashboard:
 - **Legal review**: have your DPO or a Malaysian lawyer review the notice. This draft follows the Section 7 requirements, but your actual retention period and service providers should be checked against it.
 - **Terminology**: many Malaysian strata buildings call these charges *maintenance charges and sinking fund* (caj penyelenggaraan dan sumbangan kumpulan wang penjelas) rather than "association dues". Say if you'd like the wording changed. Do it before submitting to Meta, because each change needs re-approval.
 - **Language of bills and reminders**: these are in English only, which the PDPA doesn't restrict. Bahasa Melayu versions can be added as separate Meta templates if you want them.
-- **Payment options**: the messages say "reply to this message". Tell me if you'd rather list bank / DuitNow / FPX details directly.
 - **Final notice**: it mentions "penalties and measures set out in the Association's by-laws". Keep it only if your by-laws provide for them.
 
 Sources: [Act A1727 entry into force (Digital Policy Alert)](https://digitalpolicyalert.org/event/30546-personal-data-protection-amendment-act-2024-act-a1727-including-data-protection-regulation-partially-entered-into-force), [Ministry of Digital commencement order for Act A1727](https://digitalpolicyalert.org/change/14889-ministry-of-digital-order-on-appointment-of-date-of-coming-into-operation-for-personal-data-protection-amendment-act-2024-act-a1727), [Guidelines on PDPA notices (Rajah & Tann)](https://www.rajahtannasia.com/?p=34598), [Act 709 analysis (UNU)](https://c3.unu.edu/projects/ai/policy_analysis/Act_709_14_6_2016_analysis.pdf).

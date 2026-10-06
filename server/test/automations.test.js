@@ -128,6 +128,9 @@ test('1. quarterly bill notice: unpaid get the notice with totals, paid are skip
   assert.match(ben.rendered_body, /Unit B-08-01 covering Q4 2026/);
   assert.match(ben.rendered_body, /Previous unpaid balance: RM 980\.00\nTotal amount due: RM 1,960\.00/);
   assert.match(ben.rendered_body, /Management Office/);
+  assert.match(ben.rendered_body, /Bank: Public Bank\nAccount name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\nAccount no\.: 3214-1858-04/);
+  const benEmail = rows.find((r) => r.contact_name === 'Benjamin Lee' && r.channel === 'email');
+  assert.match(benEmail.rendered_body, /Account no\.:\s+3214-1858-04\n\s+Reference:\s+your unit number \(Unit B-08-01\)/);
   assert.equal(ben.wa_payload.template.name, 'tmr_quarterly_dues_notice');
   assert.deepEqual(ben.wa_payload.template.params.slice(0, 3), ['Benjamin Lee', 'B-08-01', 'Q4 2026']);
   assert.equal(ben.wa_payload.template.params[6], formatDateLong(shift(-20)));
@@ -155,6 +158,7 @@ test('2. overdue reminders: right stage per account, each stage only once, paid 
   ]);
   assert.match(rows.find((r) => r.contact_name === 'Farah Aziz').rendered_body, /^FINAL NOTICE: .*now 31 days past/s);
   assert.match(rows.find((r) => r.contact_name === 'Farah Aziz').rendered_body, /Total amount due: RM 600\.00/);
+  assert.ok(rows.every((r) => r.rendered_body.includes('3214-1858-04')), 'every reminder carries the bank account');
 
   // Running again the same day sends nothing new
   await requestRun({ trigger: 'automation', kind: 'reminders' });
@@ -223,6 +227,7 @@ test('4. balance inquiry replies with the latest sheet values and days overdue',
   assert.match(ben, /Hello Benjamin, here is the latest statement for Unit B-08-01/);
   assert.match(ben, /Total amount due: RM 1,960\.00/);
   assert.match(ben, /\(overdue by 30 days\)/);
+  assert.match(ben, /Account no\.: 3214-1858-04\nReference: Unit B-08-01/);
   assert.match(await inbound('60133334444', 'wamid.b2', 'how much is my bill?'), /no unpaid association dues/); // Chitra, paid
   assert.match(await inbound('60199991234', 'wamid.b3', 'what is my balance'), /could not find a unit account/); // consented stranger
   const preview = await agent.post('/api/automations/balance/preview').set(H).send({ to: '012-222 3333' }).expect(200);
