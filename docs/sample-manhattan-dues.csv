@@ -1,4 +1,4 @@
-Name,Unit,WhatsApp,Email,Status,Billing Period,Amount,Previous Unpaid,Due Date
+Name,Unit,WhatsApp,Email,Status,Billing Period,Maintenance & Sinking Fund,Arrears,Due Date
 Aisyah Rahman,A-12-03,012-111 2222,aisyah@example.com,Unpaid,Q4 2026 (Oct–Dec),"1,245.00",0,15/10/2026
 Benjamin Lee,B-08-01,012-222 3333,ben@example.com,Unpaid,Q4 2026 (Oct–Dec),980.00,980.00,30/09/2026
 Chitra Devi,A-15-02,013-333 4444,,Paid,Q4 2026 (Oct–Dec),"1,245.00",0,15/10/2026

@@ -2,6 +2,8 @@
 
 Everything below is already loaded into the app by one command (see **Load into the app**). This document is the reference copy, and the source for the WhatsApp templates you submit to Meta.
 
+**Terminology** follows Malaysian strata usage: the **Joint Management Body (JMB)** bills **maintenance charges and sinking fund**, and earlier unpaid amounts are **arrears**.
+
 ## 1. The spreadsheet
 
 One row per unit. Header names are matched loosely (case and spacing don't matter). Example: [`sample-manhattan-dues.csv`](sample-manhattan-dues.csv)
@@ -14,15 +16,15 @@ One row per unit. Header names are matched loosely (case and spacing don't matte
 | **Email** | aisyah@example.com | email messages |
 | **Status** | Unpaid / Paid | picks the message; **change to Paid when they pay** to stop reminders |
 | **Billing Period** | Q4 2026 (Oct–Dec) | `{{billing_period}}` |
-| **Amount** | 1,245.00 | upcoming quarterly dues (`{{amount_formatted}}`) |
-| **Previous Unpaid** | 320.00 (blank = 0) | `{{previous_unpaid_formatted}}` |
+| **Maintenance & Sinking Fund** | 1,245.00 | this quarter's maintenance charges and sinking fund (`{{amount_formatted}}`). A column named *Amount* or *Maintenance Charges* also works. |
+| **Arrears** | 320.00 (blank = 0) | unpaid amount from earlier bills (`{{previous_unpaid_formatted}}`). *Previous Unpaid* or *Tunggakan* also works. |
 | **Due Date** | 15/10/2026 (DD/MM/YYYY) | due date, and the reminder clock |
 
 Calculated by the app (no column needed):
 
 | Variable | Meaning | Example |
 |---|---|---|
-| `{{total_due_formatted}}` | Amount + Previous Unpaid | RM 1,565.00 |
+| `{{total_due_formatted}}` | Maintenance & Sinking Fund + Arrears | RM 1,565.00 |
 | `{{due_date_formatted}}` | due date written out | 15 October 2026 |
 | `{{days_overdue}}` | days since the due date (0 if not yet due) | 14 |
 | `{{due_status}}` | plain wording | "overdue by 14 days", "due today", "due in 3 days" |
@@ -54,7 +56,7 @@ The account details are fixed text inside the WhatsApp templates, so **if the ba
 
 | # | Use case | Trigger | Who gets it |
 |---|---|---|---|
-| 1 | Quarterly bill notice | You click **Send now** or schedule it (Send & schedule) | Rows with Status **Unpaid**. Rows marked **Paid** are skipped and recorded as skipped. |
+| 1 | Quarterly maintenance charges & sinking fund notice | You click **Send now** or schedule it (Send & schedule) | Rows with Status **Unpaid**. Rows marked **Paid** are skipped and recorded as skipped. |
 | 2 | Reminders at due date **+5, +14, +30 days** | Automatic daily check (Automations → Overdue reminders, default 09:00 Malaysia time) | Rows whose Status is **still Unpaid** after re-reading the sheet. Each reminder is sent **once per bill**. If the app was off on day 5, it sends the reminder for the latest stage reached (e.g. day 16 → the +14 reminder only). |
 | 3 | Personal Data Protection Notice (bilingual) | Someone **not in the sheet** sends a WhatsApp message for the first time | That person. Their YES/YA or NO/TIDAK is recorded under **Privacy consents** (exportable to CSV) and in the audit log. |
 | 4 | Balance inquiry | A resident in the sheet messages words like *balance, bill, dues, how much, SOA, baki, bil, yuran, tunggakan, berapa* (WhatsApp or email) | That resident: the sheet is re-read first, and the reply shows the amounts and how many days overdue. An owner with several units gets one section per unit. |
@@ -65,11 +67,11 @@ Messages 1 and 2 are started by the building, so **WhatsApp requires Meta-approv
 
 In **WhatsApp Manager → Message templates → Create template**, choose **Utility** and the language **English**. Name and body must match exactly. Meta usually approves Utility templates within minutes to a day.
 
-### 1. Quarterly association dues notice
+### 1. Quarterly maintenance charges & sinking fund notice
 
 | Field in Meta | Value |
 |---|---|
-| Template name | `tmr_quarterly_dues_notice` |
+| Template name | `tmr_maintenance_charges_notice` |
 | Category | **Utility** |
 | Language | English (`en`) |
 | Used for | app template `unpaid` |
@@ -79,10 +81,10 @@ In **WhatsApp Manager → Message templates → Create template**, choose **Util
 ```
 Good day, {{1}}!
 
-This is a billing notice from The Manhattan Residence Management Office for the association dues of Unit {{2}} covering {{3}}.
+This is a billing notice from the Joint Management Body (JMB) of The Manhattan Residence for the maintenance charges and sinking fund of Unit {{2}} for {{3}}.
 
-Upcoming quarterly dues: {{4}}
-Previous unpaid balance: {{5}}
+Maintenance charges & sinking fund: {{4}}
+Arrears: {{5}}
 Total amount due: {{6}}
 Due date: {{7}}
 
@@ -109,19 +111,19 @@ After paying, please reply with your proof of payment. For questions, simply rep
 | `{{6}}` | `total_due_formatted` | RM 1,565.00 |
 | `{{7}}` | `due_date_formatted` | 15 October 2026 |
 
-**Email version**: subject `Association Dues Notice – Unit {{unit}} – {{billing_period}}`
+**Email version**: subject `Maintenance Charges & Sinking Fund – Unit {{unit}} – {{billing_period}}`
 
 ```
 Dear {{name}},
 
-Good day! This is a billing notice from The Manhattan Residence Management Office for the association dues of Unit {{unit}} covering {{billing_period}}.
+Good day! This is a billing notice from the Joint Management Body (JMB) of The Manhattan Residence for the maintenance charges and sinking fund of Unit {{unit}} for {{billing_period}}.
 
-    Upcoming quarterly dues:   {{amount_formatted}}
-    Previous unpaid balance:   {{previous_unpaid_formatted}}
-    TOTAL AMOUNT DUE:          {{total_due_formatted}}
-    Due date:                  {{due_date_formatted}}
+    Maintenance charges & sinking fund:  {{amount_formatted}}
+    Arrears:                             {{previous_unpaid_formatted}}
+    TOTAL AMOUNT DUE:                    {{total_due_formatted}}
+    Due date:                            {{due_date_formatted}}
 
-Kindly settle your dues on or before the due date.
+Kindly settle on or before the due date.
 
     Payment by bank transfer
     Bank:          Public Bank
@@ -134,14 +136,15 @@ After paying, please reply to this email with your proof of payment. For any que
 If you have already paid, please disregard this notice.
 
 Thank you,
-The Manhattan Residence Management Office
+The Joint Management Body (JMB)
+The Manhattan Residence
 ```
 
 ### 2a. First reminder – due date + 5 days
 
 | Field in Meta | Value |
 |---|---|
-| Template name | `tmr_dues_reminder_first` |
+| Template name | `tmr_maintenance_reminder_first` |
 | Category | **Utility** |
 | Language | English (`en`) |
 | Used for | app template `reminder_5` |
@@ -149,9 +152,9 @@ The Manhattan Residence Management Office
 **Body** (paste exactly):
 
 ```
-Hello {{1}}, this is a friendly reminder from The Manhattan Residence Management Office.
+Hello {{1}}, this is a friendly reminder from the Joint Management Body (JMB) of The Manhattan Residence.
 
-Our records show that the association dues for Unit {{2}} are still unpaid. The due date was {{3}}, so the account is now {{4}} days past due.
+Our records show that the maintenance charges and sinking fund for Unit {{2}} are still outstanding. The due date was {{3}}, so the account is now {{4}} days overdue.
 
 Total amount due: {{5}}
 
@@ -174,14 +177,14 @@ Please settle at your earliest convenience. If you have already paid, kindly rep
 | `{{4}}` | `days_overdue` | 5 |
 | `{{5}}` | `total_due_formatted` | RM 1,565.00 |
 
-**Email version**: subject `Payment Reminder – Unit {{unit}} association dues are {{days_overdue}} days past due`
+**Email version**: subject `Payment Reminder – Unit {{unit}} maintenance charges & sinking fund {{days_overdue}} days overdue`
 
 ```
 Dear {{name}},
 
-This is a friendly reminder from The Manhattan Residence Management Office.
+This is a friendly reminder from the Joint Management Body (JMB) of The Manhattan Residence.
 
-Our records show that the association dues for Unit {{unit}} are still unpaid. The due date was {{due_date_formatted}}, so the account is now {{days_overdue}} days past due.
+Our records show that the maintenance charges and sinking fund for Unit {{unit}} are still outstanding. The due date was {{due_date_formatted}}, so the account is now {{days_overdue}} days overdue.
 
     TOTAL AMOUNT DUE:  {{total_due_formatted}}
 
@@ -194,14 +197,15 @@ Our records show that the association dues for Unit {{unit}} are still unpaid. T
 Please settle at your earliest convenience. If you have already paid, kindly reply to this email with your proof of payment so we can update your account.
 
 Thank you,
-The Manhattan Residence Management Office
+The Joint Management Body (JMB)
+The Manhattan Residence
 ```
 
 ### 2b. Second reminder – due date + 14 days
 
 | Field in Meta | Value |
 |---|---|
-| Template name | `tmr_dues_reminder_second` |
+| Template name | `tmr_maintenance_reminder_second` |
 | Category | **Utility** |
 | Language | English (`en`) |
 | Used for | app template `reminder_14` |
@@ -209,9 +213,9 @@ The Manhattan Residence Management Office
 **Body** (paste exactly):
 
 ```
-Hello {{1}}, this is a second reminder from The Manhattan Residence Management Office.
+Hello {{1}}, this is a second reminder from the Joint Management Body (JMB) of The Manhattan Residence.
 
-The association dues for Unit {{2}} remain unpaid and are now {{3}} days past the {{4}} due date.
+The maintenance charges and sinking fund for Unit {{2}} remain outstanding and are now {{3}} days past the {{4}} due date.
 
 Total amount due: {{5}}
 
@@ -221,7 +225,7 @@ Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
 Account no.: 3214-1858-04
 Please use your unit number as the payment reference.
 
-We kindly ask that you settle this balance as soon as possible to keep your account in good standing. If payment has already been made, please reply with your proof of payment. Thank you.
+We kindly ask that you settle this amount as soon as possible to keep your account in good standing. If payment has already been made, please reply with your proof of payment. Thank you.
 ```
 
 **Variable samples** (Meta asks for one example per variable):
@@ -234,14 +238,14 @@ We kindly ask that you settle this balance as soon as possible to keep your acco
 | `{{4}}` | `due_date_formatted` | 15 October 2026 |
 | `{{5}}` | `total_due_formatted` | RM 1,565.00 |
 
-**Email version**: subject `Second Reminder – Unit {{unit}} association dues are {{days_overdue}} days overdue`
+**Email version**: subject `Second Reminder – Unit {{unit}} maintenance charges & sinking fund {{days_overdue}} days overdue`
 
 ```
 Dear {{name}},
 
-This is a second reminder from The Manhattan Residence Management Office.
+This is a second reminder from the Joint Management Body (JMB) of The Manhattan Residence.
 
-The association dues for Unit {{unit}} remain unpaid and are now {{days_overdue}} days past the {{due_date_formatted}} due date.
+The maintenance charges and sinking fund for Unit {{unit}} remain outstanding and are now {{days_overdue}} days past the {{due_date_formatted}} due date.
 
     TOTAL AMOUNT DUE:  {{total_due_formatted}}
 
@@ -251,17 +255,18 @@ The association dues for Unit {{unit}} remain unpaid and are now {{days_overdue}
     Account no.:   3214-1858-04
     Reference:     your unit number (Unit {{unit}})
 
-We kindly ask that you settle this balance as soon as possible to keep your account in good standing. If payment has already been made, please reply to this email with your proof of payment.
+We kindly ask that you settle this amount as soon as possible to keep your account in good standing. If payment has already been made, please reply to this email with your proof of payment.
 
 Thank you,
-The Manhattan Residence Management Office
+The Joint Management Body (JMB)
+The Manhattan Residence
 ```
 
 ### 2c. Final notice – due date + 30 days
 
 | Field in Meta | Value |
 |---|---|
-| Template name | `tmr_dues_final_notice` |
+| Template name | `tmr_maintenance_final_notice` |
 | Category | **Utility** |
 | Language | English (`en`) |
 | Used for | app template `final_30` |
@@ -269,7 +274,7 @@ The Manhattan Residence Management Office
 **Body** (paste exactly):
 
 ```
-FINAL NOTICE: Hello {{1}}, the association dues for Unit {{2}} at The Manhattan Residence remain unpaid and are now {{3}} days past the {{4}} due date.
+FINAL NOTICE: Hello {{1}}, the maintenance charges and sinking fund for Unit {{2}} at The Manhattan Residence remain outstanding and are now {{3}} days past the {{4}} due date.
 
 Total amount due: {{5}}
 
@@ -279,7 +284,7 @@ Account name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN
 Account no.: 3214-1858-04
 Please use your unit number as the payment reference.
 
-Please settle the full amount immediately, or contact the Management Office to discuss your account. Unpaid accounts may be subject to the penalties and measures set out in the Association's by-laws. If you have already paid, please reply with your proof of payment. Thank you.
+Please settle the full amount immediately, or contact the Management Office to discuss your account. Outstanding charges may be subject to late payment interest and further recovery action under the Strata Management Act 2013 (Act 757) and the building's by-laws. If you have already paid, please reply with your proof of payment. Thank you.
 ```
 
 **Variable samples** (Meta asks for one example per variable):
@@ -292,14 +297,14 @@ Please settle the full amount immediately, or contact the Management Office to d
 | `{{4}}` | `due_date_formatted` | 15 October 2026 |
 | `{{5}}` | `total_due_formatted` | RM 1,565.00 |
 
-**Email version**: subject `FINAL NOTICE – Unit {{unit}} association dues {{days_overdue}} days overdue`
+**Email version**: subject `FINAL NOTICE – Unit {{unit}} maintenance charges & sinking fund {{days_overdue}} days overdue`
 
 ```
 Dear {{name}},
 
 FINAL NOTICE
 
-The association dues for Unit {{unit}} at The Manhattan Residence remain unpaid and are now {{days_overdue}} days past the {{due_date_formatted}} due date.
+The maintenance charges and sinking fund for Unit {{unit}} at The Manhattan Residence remain outstanding and are now {{days_overdue}} days past the {{due_date_formatted}} due date.
 
     TOTAL AMOUNT DUE:  {{total_due_formatted}}
 
@@ -309,11 +314,12 @@ The association dues for Unit {{unit}} at The Manhattan Residence remain unpaid 
     Account no.:   3214-1858-04
     Reference:     your unit number (Unit {{unit}})
 
-Please settle the full amount immediately, or contact the Management Office to discuss your account. Unpaid accounts may be subject to the penalties and measures set out in the Association's by-laws.
+Please settle the full amount immediately, or contact the Management Office to discuss your account. Outstanding charges may be subject to late payment interest and further recovery action under the Strata Management Act 2013 (Act 757) and the building's by-laws.
 
 If you have already paid, please reply to this email with your proof of payment so we can update our records.
 
-The Manhattan Residence Management Office
+The Joint Management Body (JMB)
+The Manhattan Residence
 ```
 
 ## 4. Personal Data Protection Notice (use case 3), free text
@@ -334,7 +340,7 @@ What this means for the notice:
 - **Act A1727** requires a **Data Protection Officer (DPO)**, so the notice names your DPO as the contact. It also adds a right to **data portability**, which the notice mentions. Since the amendment the Act uses "data controller" instead of "data user"; the notice simply says "we".
 - **Cross-border transfer**: Meta/WhatsApp may store data outside Malaysia, so the notice says so.
 
-**Before you can switch this on**, replace `[DPO email or phone]` (it appears twice; once in each language) with your DPO's real contact details. The app refuses to enable the notice while that placeholder is still in the text.
+The notice names **Nicco Tan (+60 11-1433 0484)** as the Data Protection Officer in both languages, and identifies the **Joint Management Body (JMB)** as the organisation processing the data. If the DPO changes, edit the notice under Automations. The app refuses to enable any automatic message that still contains a `[placeholder]`.
 
 **Notice** (sent automatically to an unknown sender's first message; about 2,500 characters, within WhatsApp's 4,096 limit):
 
@@ -342,19 +348,19 @@ What this means for the notice:
 Thank you for messaging The Manhattan Residence Management Office. / Terima kasih kerana menghubungi Pejabat Pengurusan The Manhattan Residence.
 
 PERSONAL DATA PROTECTION NOTICE
-We process personal data in accordance with the Personal Data Protection Act 2010 (Act 709), as amended by the Personal Data Protection (Amendment) Act 2024 (Act A1727).
+The Joint Management Body (JMB) of The Manhattan Residence ("we") processes personal data in accordance with the Personal Data Protection Act 2010 (Act 709), as amended by the Personal Data Protection (Amendment) Act 2024 (Act A1727).
 1. Data: your name, mobile number, WhatsApp profile name and the messages you send us, provided by you through this chat.
 2. Purpose: to respond to your enquiry, to verify whether you are a resident or unit owner, and to communicate with you about building matters.
 3. Disclosure: only authorised management staff, and service providers that run this messaging service (such as Meta/WhatsApp, which may store data outside Malaysia). We do not sell your data or disclose it to other third parties unless required by law.
-4. Your rights: you may request access to or correction of your personal data, request data portability where applicable, withdraw your consent, or make an enquiry or complaint by contacting our Data Protection Officer at [DPO email or phone].
+4. Your rights: you may request access to or correction of your personal data, request data portability where applicable, withdraw your consent, or make an enquiry or complaint by contacting our Data Protection Officer, Nicco Tan, at +60 11-1433 0484.
 5. Providing your data is voluntary. If you do not agree, we will not be able to assist you through this channel.
 
 NOTIS PERLINDUNGAN DATA PERIBADI
-Kami memproses data peribadi menurut Akta Perlindungan Data Peribadi 2010 (Akta 709), sebagaimana dipinda oleh Akta Perlindungan Data Peribadi (Pindaan) 2024 (Akta A1727).
+Badan Pengurusan Bersama (JMB) The Manhattan Residence ("kami") memproses data peribadi menurut Akta Perlindungan Data Peribadi 2010 (Akta 709), sebagaimana dipinda oleh Akta Perlindungan Data Peribadi (Pindaan) 2024 (Akta A1727).
 1. Data: nama, nombor telefon bimbit, nama profil WhatsApp dan mesej yang anda hantar kepada kami, yang diberikan oleh anda melalui perbualan ini.
 2. Tujuan: untuk menjawab pertanyaan anda, mengesahkan sama ada anda penghuni atau pemilik unit, dan berhubung dengan anda mengenai hal-hal bangunan.
 3. Pendedahan: hanya kakitangan pengurusan yang diberi kuasa, dan pembekal perkhidmatan yang mengendalikan perkhidmatan pesanan ini (seperti Meta/WhatsApp, yang mungkin menyimpan data di luar Malaysia). Kami tidak menjual data anda atau mendedahkannya kepada pihak ketiga lain kecuali jika dikehendaki oleh undang-undang.
-4. Hak anda: anda boleh meminta akses kepada atau pembetulan data peribadi anda, meminta kemudahalihan data jika berkenaan, menarik balik persetujuan anda, atau membuat pertanyaan atau aduan dengan menghubungi Pegawai Perlindungan Data kami di [DPO email or phone].
+4. Hak anda: anda boleh meminta akses kepada atau pembetulan data peribadi anda, meminta kemudahalihan data jika berkenaan, menarik balik persetujuan anda, atau membuat pertanyaan atau aduan dengan menghubungi Pegawai Perlindungan Data kami, Nicco Tan, di talian +60 11-1433 0484.
 5. Pemberian data anda adalah secara sukarela. Jika anda tidak bersetuju, kami tidak dapat membantu anda melalui saluran ini.
 
 Do you agree? Please reply YES or NO.
@@ -373,14 +379,14 @@ A one-word answer such as *ya* or *tidak* counts only when it stands alone (or w
 
 ## 5. Balance inquiry replies (use case 4), free text
 
-Trigger words: balance, bill, billing, dues, how much, outstanding, statement, soa, unpaid, owe, baki, bil, yuran, caj, tunggakan, berapa, hutang, penyata
+Trigger words: balance, bill, billing, dues, how much, outstanding, statement, soa, unpaid, owe, baki, bil, yuran, caj, tunggakan, berapa, hutang, penyata, maintenance, sinking fund, service charge, arrears, penyelenggaraan
 
 **Unpaid account:**
 ```
 Hello {{first_name}}, here is the latest statement for Unit {{unit}} of The Manhattan Residence:
 
-Quarterly dues ({{billing_period}}): {{amount_formatted}}
-Previous unpaid balance: {{previous_unpaid_formatted}}
+Maintenance charges & sinking fund ({{billing_period}}): {{amount_formatted}}
+Arrears: {{previous_unpaid_formatted}}
 Total amount due: {{total_due_formatted}}
 Due date: {{due_date_formatted}} ({{due_status}})
 
@@ -394,7 +400,7 @@ If you have already paid, kindly send us your proof of payment so we can update 
 ```
 **Paid account:**
 ```
-Hello {{first_name}}, Unit {{unit}} has no unpaid association dues as of today. Thank you for your prompt payment!
+Hello {{first_name}}, Unit {{unit}} has no outstanding maintenance charges or sinking fund as of today. Thank you for your prompt payment!
 ```
 **Number/email not in the sheet:**
 ```
@@ -405,8 +411,8 @@ Example. Benjamin (Unit B-08-01) writes *"Hi, berapa baki yuran saya?"* and auto
 ```
 Hello Benjamin, here is the latest statement for Unit B-08-01 of The Manhattan Residence:
 
-Quarterly dues (Q4 2026 (Oct–Dec)): RM 980.00
-Previous unpaid balance: RM 980.00
+Maintenance charges & sinking fund (Q4 2026 (Oct–Dec)): RM 980.00
+Arrears: RM 980.00
 Total amount due: RM 1,960.00
 Due date: 30 September 2026 (overdue by 6 days)
 
@@ -431,13 +437,11 @@ Then in the dashboard:
 1. **Contacts & source**: connect the Google Sheet (or upload the file).
 2. **Templates**: review the wording. After Meta approves the WhatsApp templates, nothing else is needed, because the template names already match.
 3. **Send & schedule**: schedule the quarterly bill notice.
-4. **Automations**: fill in the DPO contact, then tick *Send reminders automatically every day*, *Send the privacy notice*, and *Answer balance questions automatically*. Use **Due for a reminder today** and **Try it** to preview first.
+4. **Automations**: tick *Send reminders automatically every day*, *Send the privacy notice*, and *Answer balance questions automatically*. Use **Due for a reminder today** and **Try it** to preview first.
 
 ## Before going live, please confirm
-- **DPO contact** for the privacy notice (required to switch it on).
-- **Legal review**: have your DPO or a Malaysian lawyer review the notice. This draft follows the Section 7 requirements, but your actual retention period and service providers should be checked against it.
-- **Terminology**: many Malaysian strata buildings call these charges *maintenance charges and sinking fund* (caj penyelenggaraan dan sumbangan kumpulan wang penjelas) rather than "association dues". Say if you'd like the wording changed. Do it before submitting to Meta, because each change needs re-approval.
+- **Legal review**: have Nicco Tan (DPO) or a Malaysian lawyer review the notice. This draft follows the Section 7 requirements, but your actual retention period and service providers should be checked against it.
 - **Language of bills and reminders**: these are in English only, which the PDPA doesn't restrict. Bahasa Melayu versions can be added as separate Meta templates if you want them.
-- **Final notice**: it mentions "penalties and measures set out in the Association's by-laws". Keep it only if your by-laws provide for them.
+- **Final notice**: it says outstanding charges "may be subject to late payment interest and further recovery action under the Strata Management Act 2013 (Act 757) and the building's by-laws". Please confirm with your JMB that this matches how you handle late payers.
 
 Sources: [Act A1727 entry into force (Digital Policy Alert)](https://digitalpolicyalert.org/event/30546-personal-data-protection-amendment-act-2024-act-a1727-including-data-protection-regulation-partially-entered-into-force), [Ministry of Digital commencement order for Act A1727](https://digitalpolicyalert.org/change/14889-ministry-of-digital-order-on-appointment-of-date-of-coming-into-operation-for-personal-data-protection-amendment-act-2024-act-a1727), [Guidelines on PDPA notices (Rajah & Tann)](https://www.rajahtannasia.com/?p=34598), [Act 709 analysis (UNU)](https://c3.unu.edu/projects/ai/policy_analysis/Act_709_14_6_2016_analysis.pdf).

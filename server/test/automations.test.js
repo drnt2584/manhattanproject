@@ -28,7 +28,7 @@ const shift = (days) => {
 const my = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`; // DD/MM/YYYY as typed in Malaysia
 
 function sheet(rows) {
-  return ['Name,Unit,WhatsApp,Email,Status,Billing Period,Amount,Previous Unpaid,Due Date', ...rows].join('\n');
+  return ['Name,Unit,WhatsApp,Email,Status,Billing Period,Maintenance & Sinking Fund,Arrears,Due Date', ...rows].join('\n');
 }
 const ROWS = () => [
   `Aisyah Rahman,A-12-03,012-111 2222,aisyah@example.com,Unpaid,Q4 2026,"1,245.00",0,${my(shift(-6))}`,
@@ -125,19 +125,18 @@ test('1. quarterly bill notice: unpaid get the notice with totals, paid are skip
   const { rows } = await query('SELECT contact_name, channel, state, rendered_body, rendered_subject, wa_payload FROM run_recipients WHERE run_id = $1', [run.id]);
   const ben = rows.find((r) => r.contact_name === 'Benjamin Lee' && r.channel === 'whatsapp');
   assert.equal(ben.state, 'sent');
-  assert.match(ben.rendered_body, /Unit B-08-01 covering Q4 2026/);
-  assert.match(ben.rendered_body, /Previous unpaid balance: RM 980\.00\nTotal amount due: RM 1,960\.00/);
-  assert.match(ben.rendered_body, /Management Office/);
+  assert.match(ben.rendered_body, /Joint Management Body \(JMB\) of The Manhattan Residence for the maintenance charges and sinking fund of Unit B-08-01 for Q4 2026/);
+  assert.match(ben.rendered_body, /Maintenance charges & sinking fund: RM 980\.00\nArrears: RM 980\.00\nTotal amount due: RM 1,960\.00/);
   assert.match(ben.rendered_body, /Bank: Public Bank\nAccount name: BADAN PENGURUSAN BERSAMA THE MANHATTAN RESIDENSI 61 RAJA CHULAN\nAccount no\.: 3214-1858-04/);
   const benEmail = rows.find((r) => r.contact_name === 'Benjamin Lee' && r.channel === 'email');
   assert.match(benEmail.rendered_body, /Account no\.:\s+3214-1858-04\n\s+Reference:\s+your unit number \(Unit B-08-01\)/);
-  assert.equal(ben.wa_payload.template.name, 'tmr_quarterly_dues_notice');
+  assert.equal(ben.wa_payload.template.name, 'tmr_maintenance_charges_notice');
   assert.deepEqual(ben.wa_payload.template.params.slice(0, 3), ['Benjamin Lee', 'B-08-01', 'Q4 2026']);
   assert.equal(ben.wa_payload.template.params[6], formatDateLong(shift(-20)));
   assert.match(ben.wa_payload.template.params[6], /^\d{1,2} [A-Z][a-z]+ \d{4}$/); // 15 October 2026
   const dino = rows.find((r) => r.contact_name === 'Daniel Wong');
-  assert.match(dino.rendered_body, /Previous unpaid balance:\s+RM 0\.00/); // blank cell = nothing owed
-  assert.equal(dino.rendered_subject, 'Association Dues Notice – Unit C-03-06 – Q4 2026');
+  assert.match(dino.rendered_body, /Arrears:\s+RM 0\.00/); // blank cell = nothing owed
+  assert.equal(dino.rendered_subject, 'Maintenance Charges & Sinking Fund – Unit C-03-06 – Q4 2026');
   assert.ok(rows.filter((r) => r.contact_name === 'Chitra Devi').every((r) => r.state === 'skipped'));
   assert.equal(done.failed, 0);
 });
@@ -188,18 +187,20 @@ test('daily reminder check queues exactly one run per day once enabled', async (
 
 test('3. data privacy notice for unknown senders, consent recorded', async () => {
   const { body } = await agent.get('/api/automations').expect(200);
-  // the seeded notice still contains "[DPO email or phone]": it can't be switched on until filled in
-  const refused = await agent.put('/api/automations/privacy').set(H).send({ ...body.settings.privacy, enabled: true }).expect(400);
+  // an automatic message can't be switched on while it still contains a [placeholder]
+  const draft = body.settings.privacy.notice.replace('Nicco Tan, at +60 11-1433 0484', '[DPO email or phone]');
+  const refused = await agent.put('/api/automations/privacy').set(H).send({ ...body.settings.privacy, notice: draft, enabled: true }).expect(400);
   assert.match(refused.body.error, /\[DPO email or phone\]/);
-  const notice = body.settings.privacy.notice.replaceAll('[DPO email or phone]', 'dpo@manhattanresidence.my');
-  await agent.put('/api/automations/privacy').set(H).send({ ...body.settings.privacy, notice, enabled: true }).expect(200);
+  await agent.put('/api/automations/privacy').set(H).send({ ...body.settings.privacy, enabled: true }).expect(200);
   await agent.put('/api/automations/balance').set(H).send({ ...body.settings.balance, enabled: true }).expect(200);
 
   const stranger = '60199991234';
   const sent = await inbound(stranger, 'wamid.s1', 'Hi, ada unit untuk disewa?', 'Rizal');
   assert.match(sent, /Personal Data Protection Act 2010 \(Act 709\)[\s\S]*Act A1727/);
   assert.match(sent, /Akta Perlindungan Data Peribadi 2010 \(Akta 709\)[\s\S]*Akta A1727/);
-  assert.match(sent, /dpo@manhattanresidence\.my/);
+  assert.match(sent, /Data Protection Officer, Nicco Tan, at \+60 11-1433 0484/);
+  assert.match(sent, /Pegawai Perlindungan Data kami, Nicco Tan, di talian \+60 11-1433 0484/);
+  assert.match(sent, /The Joint Management Body \(JMB\) of The Manhattan Residence \("we"\)/);
   assert.match(sent, /reply YES or NO\.\nAdakah anda bersetuju\? Sila balas YA atau TIDAK\.$/);
   assert.match(await inbound(stranger, 'wamid.s2', 'tidak faham'), /Sila balas YA/);
   assert.match(await inbound(stranger, 'wamid.s3', 'Ya, setuju'), /persetujuan anda telah direkodkan/);
@@ -225,10 +226,10 @@ test('3. data privacy notice for unknown senders, consent recorded', async () =>
 test('4. balance inquiry replies with the latest sheet values and days overdue', async () => {
   const ben = await inbound('60122223333', 'wamid.b1', 'Hi, berapa baki yuran saya?');
   assert.match(ben, /Hello Benjamin, here is the latest statement for Unit B-08-01/);
-  assert.match(ben, /Total amount due: RM 1,960\.00/);
+  assert.match(ben, /Maintenance charges & sinking fund \(Q4 2026\): RM 980\.00\nArrears: RM 980\.00\nTotal amount due: RM 1,960\.00/);
   assert.match(ben, /\(overdue by 30 days\)/);
   assert.match(ben, /Account no\.: 3214-1858-04\nReference: Unit B-08-01/);
-  assert.match(await inbound('60133334444', 'wamid.b2', 'how much is my bill?'), /no unpaid association dues/); // Chitra, paid
+  assert.match(await inbound('60133334444', 'wamid.b2', 'how much is my bill?'), /no outstanding maintenance charges or sinking fund/); // Chitra, paid
   assert.match(await inbound('60199991234', 'wamid.b3', 'what is my balance'), /could not find a unit account/); // consented stranger
   const preview = await agent.post('/api/automations/balance/preview').set(H).send({ to: '012-222 3333' }).expect(200);
   assert.match(preview.body.text, /RM 1,960\.00/);

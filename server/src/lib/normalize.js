@@ -15,10 +15,11 @@ export const HEADER_ALIASES = {
   whatsapp: ['whatsapp', 'whatsapp_number', 'whatsapp_no', 'wa', 'wa_number', 'phone', 'phone_number', 'mobile', 'mobile_number', 'contact_number', 'cellphone'],
   email: ['email', 'email_address', 'e_mail', 'mail'],
   status: ['status', 'status_type', 'type', 'category', 'segment'],
-  amount: ['amount', 'upcoming_amount', 'total_upcoming_amount', 'quarterly_dues', 'dues', 'amount_due', 'value', 'balance', 'total', 'number', 'points', 'credits'],
+  amount: ['amount', 'maintenance_sinking_fund', 'maintenance_and_sinking_fund', 'maintenance_charges', 'maintenance_charge', 'maintenance_fee', 'service_charge',
+    'upcoming_amount', 'total_upcoming_amount', 'quarterly_dues', 'dues', 'amount_due', 'value', 'balance', 'total', 'number', 'points', 'credits'],
   // Optional fields, exposed to templates under these canonical names
   unit: ['unit', 'unit_no', 'unit_number', 'condo_unit', 'unit_name'],
-  previous_unpaid: ['previous_unpaid', 'previous_unpaid_bill', 'previous_unpaid_amount', 'previous_balance', 'previous_bill', 'unpaid_balance', 'arrears', 'past_due', 'prior_balance'],
+  previous_unpaid: ['previous_unpaid', 'previous_unpaid_bill', 'previous_unpaid_amount', 'previous_balance', 'previous_bill', 'unpaid_balance', 'arrears', 'tunggakan', 'past_due', 'prior_balance'],
   due_date: ['due_date', 'payment_due_date', 'payment_due', 'due', 'due_on', 'pay_by', 'deadline'],
 };
 export const OPTIONAL_FIELDS = ['unit', 'previous_unpaid', 'due_date'];
