@@ -88,6 +88,9 @@ PROVISIONS = {
         "Approved as 'verified against ... p.9'. CCA s.11 is on printed page 14."),
     "prv.rta_s78": ("NOT OK",
         "Approved as 'verified against ... p.57'. RTA s.78 is on printed pages 128-129 of the 2019 reprint."),
+    "prv.cpc_s28": ("NOT OK",
+        "Approved as 'verified against ... p.39'. Section 28 begins on printed page 41 of the 2022 reprint (p.39 holds s.24). "
+        "Transcription is accurate; the page check was not done."),
     "prv.cpc_ch5_warrant": ("OK", "Correct."),
     "prv.cma_s249": ("NOT OK",
         "Column is 'Statutory text (latest version)'. The text is the 2006 reprint; the reviewer's Sources tab records A1743 (2025) as commenced "
